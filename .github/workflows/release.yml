@@ -33,10 +33,13 @@ jobs:
       - matrix
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: Install skopeo
         run: |
           sudo apt-get update
           sudo apt-get install -y golang-go skopeo
+      - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
       - uses: azure/setup-kubectl@v4
       - name: Login to GHCR
@@ -112,6 +115,8 @@ jobs:
       count: ${{ steps.matrix.outputs.count }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - id: matrix
         run: |
           chmod +x scripts/*.sh
