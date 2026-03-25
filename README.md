@@ -48,6 +48,11 @@ To run image-local smoke tests:
 ## Publishing Notes
 
 Each published image is labeled with its source repository and revision.
+Pull requests validate only the changed `images/<name>` entries, including any image-local
+`tests/kuttl` suites. Publishing on `main` only republishes changed images, and mirrored images
+are refreshed by a scheduled workflow that opens an auto-merge PR when upstream release tags move.
+Fully versioned application tags are immutable once published; subsequent rebuilds only move
+`latest` and commit-derived tags.
 
 GitHub Container Registry package visibility is managed separately from repository
 visibility. For personal-account packages, newly published packages still default

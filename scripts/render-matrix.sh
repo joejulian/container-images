@@ -7,7 +7,7 @@ head_ref="${3:-HEAD}"
 
 declare -a dirs=()
 
-if [[ "${mode}" == "changed" && -n "${base_ref}" ]]; then
+if [[ "${mode}" == "changed" && -n "${base_ref}" && "${base_ref}" != "0000000000000000000000000000000000000000" ]]; then
   mapfile -t dirs < <(
     git diff --name-only "${base_ref}" "${head_ref}" -- images \
       | awk -F/ 'NF >= 2 { print $1 "/" $2 }' \
@@ -28,4 +28,3 @@ for dir in "${dirs[@]}"; do
   jq -c --arg dir "${dir}" '. + {dir: $dir}' "${dir}/image.json"
 done
 printf ']}\n'
-

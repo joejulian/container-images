@@ -5,8 +5,15 @@ on:
     branches:
       - main
   workflow_dispatch:
-  schedule:
-    - cron: "19 6 * * *"
+    inputs:
+      scope:
+        description: Matrix scope to publish
+        required: false
+        default: changed
+        type: choice
+        options:
+          - changed
+          - all
 
 permissions:
   contents: read
@@ -15,6 +22,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    if: needs.matrix.outputs.count != '0'
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.matrix.outputs.matrix) }}
@@ -22,11 +30,12 @@ jobs:
       - matrix
     steps:
       - uses: actions/checkout@v6
-      - uses: docker/setup-buildx-action@v3
       - name: Install skopeo
         run: |
           sudo apt-get update
-          sudo apt-get install -y skopeo
+          sudo apt-get install -y golang-go skopeo
+      - uses: docker/setup-buildx-action@v3
+      - uses: azure/setup-kubectl@v4
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -34,24 +43,76 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - run: chmod +x scripts/*.sh
+      - id: has-tests
+        run: |
+          if [[ -d "${{ matrix.dir }}/tests/kuttl" ]]; then
+            printf 'present=true\n' >> "${GITHUB_OUTPUT}"
+          else
+            printf 'present=false\n' >> "${GITHUB_OUTPUT}"
+          fi
+      - name: Validate build image
+        if: matrix.type == 'build'
+        run: ./scripts/build-local.sh "${{ matrix.dir }}"
+      - name: Validate mirror source
+        if: matrix.type == 'mirror'
+        run: |
+          go install github.com/google/go-containerregistry/cmd/crane@latest
+          export PATH="${PATH}:${HOME}/go/bin"
+          while IFS= read -r tag; do
+            crane digest "${{ matrix.sourceImage }}:${tag}" >/dev/null
+          done < <(jq -r '.tags[]' "${{ matrix.dir }}/image.json")
+      - name: Install KUTTL toolchain
+        if: steps.has-tests.outputs.present == 'true'
+        run: |
+          go install sigs.k8s.io/kind@v0.29.0
+          go install github.com/kudobuilder/kuttl/cmd/kubectl-kuttl@latest
+          export PATH="${PATH}:${HOME}/go/bin"
+          kind create cluster --wait 120s
+      - name: Load image into kind
+        if: steps.has-tests.outputs.present == 'true' && matrix.type == 'build'
+        run: |
+          export PATH="${PATH}:${HOME}/go/bin"
+          kind load docker-image "local/${{ matrix.name }}:ci"
+      - name: Run KUTTL tests
+        if: steps.has-tests.outputs.present == 'true'
+        run: |
+          export PATH="${PATH}:${HOME}/go/bin"
+          ./scripts/run-kuttl.sh "${{ matrix.dir }}"
       - name: Publish build image
         if: matrix.type == 'build'
         run: ./scripts/publish-build.sh "${{ matrix.dir }}"
       - name: Publish mirrored image
         if: matrix.type == 'mirror'
         run: ./scripts/publish-mirror.sh "${{ matrix.dir }}"
+      - name: Delete kind cluster
+        if: always() && steps.has-tests.outputs.present == 'true'
+        run: |
+          export PATH="${PATH}:${HOME}/go/bin"
+          kind delete cluster
 
   matrix:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
+      count: ${{ steps.matrix.outputs.count }}
     steps:
       - uses: actions/checkout@v6
       - id: matrix
         run: |
           chmod +x scripts/*.sh
+          mode=changed
+          base_ref="${{ github.event.before }}"
+          head_ref="${GITHUB_SHA}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            mode="${{ inputs.scope }}"
+            if [[ "${mode}" == "changed" ]]; then
+              base_ref="$(git rev-parse HEAD^)"
+            fi
+          fi
           {
             printf 'matrix<<EOF\n'
-            ./scripts/render-matrix.sh all
+            matrix_json="$(./scripts/render-matrix.sh "${mode}" "${base_ref}" "${head_ref}")"
+            printf '%s\n' "${matrix_json}"
             printf 'EOF\n'
           } >> "${GITHUB_OUTPUT}"
+          printf 'count=%s\n' "$(jq '.include | length' <<< "${matrix_json}")" >> "${GITHUB_OUTPUT}"

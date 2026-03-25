@@ -1,0 +1,73 @@
+name: Update Mirrors
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "19 6 * * *"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Install crane
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y golang-go
+          go install github.com/google/go-containerregistry/cmd/crane@latest
+      - run: chmod +x scripts/*.sh
+      - name: Update mirrored image tags
+        run: |
+          export PATH="${PATH}:${HOME}/go/bin"
+          ./scripts/update-mirror-tags.sh
+      - id: diff
+        run: |
+          if git diff --quiet -- images; then
+            printf 'changed=false\n' >> "${GITHUB_OUTPUT}"
+          else
+            printf 'changed=true\n' >> "${GITHUB_OUTPUT}"
+          fi
+      - name: Commit updates
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git checkout -B automation/mirror-updates
+          git config user.name github-actions
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git add images
+          git commit -m "Update mirrored image tags"
+          git push --force-with-lease origin automation/mirror-updates
+      - name: Create or update PR
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr_number="$(
+            gh pr list \
+              --head automation/mirror-updates \
+              --base main \
+              --state open \
+              --json number \
+              --jq '.[0].number // empty'
+          )"
+          if [[ -z "${pr_number}" ]]; then
+            gh pr create \
+              --base main \
+              --head automation/mirror-updates \
+              --title "Update mirrored image tags" \
+              --body "Automated mirror tag refresh."
+            pr_number="$(
+              gh pr list \
+                --head automation/mirror-updates \
+                --base main \
+                --state open \
+                --json number \
+                --jq '.[0].number // empty'
+            )"
+          fi
+          gh pr merge "${pr_number}" --auto --squash

@@ -36,7 +36,6 @@ if [[ -z "${version}" ]]; then
   printf 'build image %s returned an empty version\n' "${name}" >&2
   exit 1
 fi
-tags+=("${image}:${version}")
 
 while IFS= read -r static_tag; do
   [[ -n "${static_tag}" ]] || continue
@@ -54,3 +53,12 @@ docker buildx build --push \
   "${tag_args[@]}" \
   -f "${context}/${dockerfile}" \
   "${context}"
+
+if docker buildx imagetools inspect "${image}:${version}" >/dev/null 2>&1; then
+  printf 'version tag %s:%s already exists, leaving it unchanged\n' "${image}" "${version}"
+  exit 0
+fi
+
+docker buildx imagetools create \
+  --tag "${image}:${version}" \
+  "${image}:sha-${sha_short}"
