@@ -4,6 +4,8 @@
   "basePreference": "mirror",
   "sourceImage": "ghcr.io/wcy-dt/mrrss",
   "image": "ghcr.io/joejulian/container-images/mrrss",
-  "tags": ["1.3.21"],
+  "tags": [
+    "1.3.22"
+  ],
   "latestTag": "latest"
 }

@@ -4,6 +4,8 @@
   "basePreference": "mirror",
   "sourceImage": "ghcr.io/miniflux/miniflux",
   "image": "ghcr.io/joejulian/container-images/miniflux",
-  "tags": ["2.2.13"],
+  "tags": [
+    "2.2.18"
+  ],
   "latestTag": "latest"
 }
