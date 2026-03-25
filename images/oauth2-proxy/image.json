@@ -1,9 +1,0 @@
-{
-  "name": "oauth2-proxy",
-  "type": "mirror",
-  "basePreference": "mirror",
-  "sourceImage": "quay.io/oauth2-proxy/oauth2-proxy",
-  "image": "ghcr.io/joejulian/container-images/oauth2-proxy",
-  "tags": ["latest"],
-  "latestTag": "latest"
-}
