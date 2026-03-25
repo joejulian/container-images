@@ -1,0 +1,9 @@
+{
+  "name": "saslauthd",
+  "type": "build",
+  "basePreference": "archlinux",
+  "context": "images/saslauthd",
+  "dockerfile": "Dockerfile",
+  "image": "ghcr.io/joejulian/container-images/saslauthd"
+}
+

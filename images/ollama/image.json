@@ -1,0 +1,10 @@
+{
+  "name": "ollama",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "docker.io/ollama/ollama",
+  "image": "ghcr.io/joejulian/container-images/ollama",
+  "tags": ["latest"],
+  "latestTag": "latest"
+}
+

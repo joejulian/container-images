@@ -1,0 +1,10 @@
+{
+  "name": "home-assistant",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "ghcr.io/home-assistant/home-assistant",
+  "image": "ghcr.io/joejulian/container-images/home-assistant",
+  "tags": ["2026.3.4"],
+  "latestTag": "latest"
+}
+

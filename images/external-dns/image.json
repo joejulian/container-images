@@ -1,0 +1,10 @@
+{
+  "name": "external-dns",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "registry.k8s.io/external-dns/external-dns",
+  "image": "ghcr.io/joejulian/container-images/external-dns",
+  "tags": ["v0.20.0"],
+  "latestTag": "latest"
+}
+

@@ -1,0 +1,10 @@
+{
+  "name": "onstar2mqtt",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "docker.io/bigthundersr/onstar2mqtt",
+  "image": "ghcr.io/joejulian/container-images/onstar2mqtt",
+  "tags": ["1.20", "1.5"],
+  "latestTag": "latest"
+}
+

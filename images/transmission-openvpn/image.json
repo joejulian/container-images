@@ -1,0 +1,10 @@
+{
+  "name": "transmission-openvpn",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "docker.io/haugene/transmission-openvpn",
+  "image": "ghcr.io/joejulian/container-images/transmission-openvpn",
+  "tags": ["latest"],
+  "latestTag": "latest"
+}
+

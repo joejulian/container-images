@@ -1,0 +1,10 @@
+{
+  "name": "minetest",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "quay.io/joejulian/minetest",
+  "image": "ghcr.io/joejulian/container-images/minetest",
+  "tags": ["v5.0.1-1"],
+  "latestTag": "latest"
+}
+

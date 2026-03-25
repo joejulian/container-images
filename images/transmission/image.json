@@ -1,0 +1,10 @@
+{
+  "name": "transmission",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "docker.io/linuxserver/transmission",
+  "image": "ghcr.io/joejulian/container-images/transmission",
+  "tags": ["latest"],
+  "latestTag": "latest"
+}
+

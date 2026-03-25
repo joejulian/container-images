@@ -1,0 +1,10 @@
+{
+  "name": "go2rtc",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "ghcr.io/alexxit/go2rtc",
+  "image": "ghcr.io/joejulian/container-images/go2rtc",
+  "tags": ["1.9.14"],
+  "latestTag": "latest"
+}
+

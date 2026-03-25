@@ -1,0 +1,10 @@
+{
+  "name": "unifi",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "docker.io/jacobalberty/unifi",
+  "image": "ghcr.io/joejulian/container-images/unifi",
+  "tags": ["latest"],
+  "latestTag": "latest"
+}
+

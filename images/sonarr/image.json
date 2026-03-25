@@ -1,0 +1,10 @@
+{
+  "name": "sonarr",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "docker.io/linuxserver/sonarr",
+  "image": "ghcr.io/joejulian/container-images/sonarr",
+  "tags": ["latest"],
+  "latestTag": "latest"
+}
+

@@ -1,0 +1,10 @@
+{
+  "name": "cloudnative-pg-postgresql",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "ghcr.io/cloudnative-pg/postgresql",
+  "image": "ghcr.io/joejulian/container-images/cloudnative-pg-postgresql",
+  "tags": ["15", "16"],
+  "latestTag": "latest"
+}
+

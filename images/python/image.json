@@ -1,0 +1,10 @@
+{
+  "name": "python",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "cgr.dev/chainguard/python",
+  "image": "ghcr.io/joejulian/container-images/python",
+  "tags": ["latest"],
+  "latestTag": "latest"
+}
+

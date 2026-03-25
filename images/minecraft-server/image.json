@@ -1,0 +1,10 @@
+{
+  "name": "minecraft-server",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "docker.io/itzg/minecraft-server",
+  "image": "ghcr.io/joejulian/container-images/minecraft-server",
+  "tags": ["stable"],
+  "latestTag": "latest"
+}
+

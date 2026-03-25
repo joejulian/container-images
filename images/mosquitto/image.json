@@ -1,0 +1,10 @@
+{
+  "name": "mosquitto",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "sourceImage": "docker.io/eclipse-mosquitto",
+  "image": "ghcr.io/joejulian/container-images/mosquitto",
+  "tags": ["2.0.21", "2"],
+  "latestTag": "latest"
+}
+

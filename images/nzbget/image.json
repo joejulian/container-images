@@ -1,0 +1,10 @@
+{
+  "name": "nzbget",
+  "type": "build",
+  "basePreference": "archlinux",
+  "context": "images/nzbget",
+  "dockerfile": "Dockerfile",
+  "image": "ghcr.io/joejulian/container-images/nzbget",
+  "versionCommand": "nzbget --version | awk 'NR==1 {print $2}'"
+}
+

@@ -1,0 +1,10 @@
+{
+  "name": "cyrus-imap",
+  "type": "build",
+  "basePreference": "archlinux",
+  "context": "images/cyrus-imap",
+  "dockerfile": "Dockerfile",
+  "image": "ghcr.io/joejulian/container-images/cyrus-imap",
+  "versionCommand": "cyr_buildinfo 2>/dev/null | sed -n 's/.*\\\"CYRUS_VERSION\\\": \\\"\\([^\\\"]*\\)\\\".*/\\1/p'"
+}
+

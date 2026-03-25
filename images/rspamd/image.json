@@ -1,0 +1,10 @@
+{
+  "name": "rspamd",
+  "type": "build",
+  "basePreference": "archlinux",
+  "context": "images/rspamd",
+  "dockerfile": "Dockerfile",
+  "image": "ghcr.io/joejulian/container-images/rspamd",
+  "versionCommand": "rspamadm --version | awk '{print $2}'"
+}
+
