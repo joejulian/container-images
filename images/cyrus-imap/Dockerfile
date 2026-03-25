@@ -26,12 +26,12 @@ RUN sudo sed -i '/^DisableSandbox$/d' /etc/pacman.conf && \
 RUN cat /etc/pam.d/sudo && ls /etc/pam.d/ && sudo id
 RUN git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm
 
-RUN yay -S --noconfirm --mflags --skippgpcheck --mflags --skipchecksums sphinx
-RUN yay -S --noconfirm --mflags --skippgpcheck --mflags --skipchecksums lmdb
-RUN yay -S --noconfirm --mflags --skippgpcheck --mflags --skipchecksums krb5
-RUN yay -S --noconfirm --mflags --skippgpcheck --mflags --skipchecksums perl-pod-pom-view-restructured
-RUN yay -S --noconfirm --mflags --skippgpcheck --mflags --skipchecksums cyrus-sasl-gssapi
-RUN yay -S --noconfirm --mflags --skippgpcheck --mflags --skipchecksums cyrus-imapd
+RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" sphinx
+RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" lmdb
+RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" krb5
+RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" perl-pod-pom-view-restructured
+RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" cyrus-sasl-gssapi
+RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" cyrus-imapd
 
 FROM archlinux:latest
 VOLUME /config
