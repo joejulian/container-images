@@ -21,6 +21,9 @@ printf '{"include":['
 first=1
 for dir in "${dirs[@]}"; do
   [[ -f "${dir}/image.json" ]] || continue
+  if [[ "${mode}" == "build" ]] && [[ "$(jq -r '.type' "${dir}/image.json")" != "build" ]]; then
+    continue
+  fi
   if [[ ${first} -eq 0 ]]; then
     printf ','
   fi

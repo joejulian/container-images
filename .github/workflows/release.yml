@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "19 5 * * *"
   workflow_dispatch:
     inputs:
       scope:
@@ -14,6 +16,7 @@ on:
         options:
           - changed
           - all
+          - build
 
 permissions:
   contents: read
@@ -108,6 +111,8 @@ jobs:
             if [[ "${mode}" == "changed" ]]; then
               base_ref="$(git rev-parse HEAD^)"
             fi
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            mode=build
           fi
           {
             printf 'matrix<<EOF\n'
