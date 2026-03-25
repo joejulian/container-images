@@ -16,7 +16,11 @@ jobs:
       - id: matrix
         run: |
           chmod +x scripts/*.sh
-          printf 'matrix=%s\n' "$(./scripts/render-matrix.sh all)" >> "${GITHUB_OUTPUT}"
+          {
+            printf 'matrix<<EOF\n'
+            ./scripts/render-matrix.sh all
+            printf 'EOF\n'
+          } >> "${GITHUB_OUTPUT}"
 
   lint:
     runs-on: ubuntu-latest
