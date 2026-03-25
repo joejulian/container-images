@@ -3,9 +3,17 @@
 from imaplib import IMAP4, IMAP4_SSL
 
 import email
-import subprocess
 import os
+import subprocess
 import sys
+
+VERSION = "0.1.0"
+
+
+if len(sys.argv) > 1 and sys.argv[1] == "--version":
+    print(VERSION)
+    sys.exit(0)
+
 
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1", "on")

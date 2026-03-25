@@ -6,5 +6,6 @@
   "dockerfile": "Dockerfile",
   "image": "ghcr.io/joejulian/container-images/unifi-cam-proxy",
   "latestTag": "latest",
-  "staticTags": ["20260315-2bf8e39-rtspcap4"]
+  "staticTags": ["20260315-2bf8e39-rtspcap4"],
+  "versionCommand": "python -c \"from importlib.metadata import version; print(version('unifi-cam-proxy'))\""
 }

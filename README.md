@@ -24,6 +24,7 @@ New images should prefer bases in this order:
 4. `archlinux`
 
 When an Arch-based image is unavoidable, keep the published image version tied to the installed package version.
+Every `build` image must define `versionCommand`, and the published tags must include that application version.
 
 ## Local Usage
 

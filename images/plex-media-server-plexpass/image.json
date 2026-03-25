@@ -4,6 +4,6 @@
   "basePreference": "archlinux",
   "context": "images/plex-media-server-plexpass",
   "dockerfile": "Dockerfile",
-  "image": "ghcr.io/joejulian/container-images/plex-media-server-plexpass"
+  "image": "ghcr.io/joejulian/container-images/plex-media-server-plexpass",
+  "versionCommand": "pacman -Q plex-media-server-plexpass | awk '{print $2}'"
 }
-

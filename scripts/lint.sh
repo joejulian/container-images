@@ -14,7 +14,7 @@ while IFS= read -r dir; do
   kind="$(jq -r '.type' "${def}")"
   case "${kind}" in
     build)
-      jq -e '.context != null and .dockerfile != null' "${def}" >/dev/null || status=1
+      jq -e '.context != null and .dockerfile != null and .versionCommand != null' "${def}" >/dev/null || status=1
       ;;
     mirror)
       jq -e '.sourceImage != null and (.tags | length) > 0' "${def}" >/dev/null || status=1
@@ -23,4 +23,3 @@ while IFS= read -r dir; do
 done < <(./scripts/list-images.sh)
 
 exit "${status}"
-

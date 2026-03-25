@@ -4,6 +4,6 @@
   "basePreference": "archlinux",
   "context": "images/saslauthd",
   "dockerfile": "Dockerfile",
-  "image": "ghcr.io/joejulian/container-images/saslauthd"
+  "image": "ghcr.io/joejulian/container-images/saslauthd",
+  "versionCommand": "pacman -Q cyrus-sasl | awk '{print $2}'"
 }
-

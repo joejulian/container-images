@@ -4,6 +4,6 @@
   "basePreference": "archlinux",
   "context": "images/learnspam",
   "dockerfile": "Dockerfile",
-  "image": "ghcr.io/joejulian/container-images/learnspam"
+  "image": "ghcr.io/joejulian/container-images/learnspam",
+  "versionCommand": "python /spamscan/spamscan.py --version"
 }
-

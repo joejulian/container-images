@@ -26,10 +26,17 @@ tags=(
 )
 
 version_command="$(jq -r '.versionCommand // empty' "${def}")"
-if [[ -n "${version_command}" ]]; then
-  version="$(docker run --rm "local/${name}:ci" sh -lc "${version_command}")"
-  tags+=("${image}:${version}")
+if [[ -z "${version_command}" ]]; then
+  printf 'build image %s is missing versionCommand\n' "${name}" >&2
+  exit 1
 fi
+
+version="$(docker run --rm "local/${name}:ci" sh -lc "${version_command}")"
+if [[ -z "${version}" ]]; then
+  printf 'build image %s returned an empty version\n' "${name}" >&2
+  exit 1
+fi
+tags+=("${image}:${version}")
 
 while IFS= read -r static_tag; do
   [[ -n "${static_tag}" ]] || continue
