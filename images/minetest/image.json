@@ -1,10 +1,10 @@
 {
   "name": "minetest",
-  "type": "mirror",
-  "basePreference": "mirror",
-  "sourceImage": "quay.io/joejulian/minetest",
+  "type": "build",
+  "basePreference": "archlinux",
+  "context": "images/minetest",
+  "dockerfile": "Dockerfile",
   "image": "ghcr.io/joejulian/container-images/minetest",
-  "tags": ["v5.0.1-1"],
-  "latestTag": "latest"
+  "latestTag": "latest",
+  "versionCommand": "pacman -Q luanti-server | awk '{print $2}'"
 }
-

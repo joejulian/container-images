@@ -5,6 +5,5 @@
   "context": "images/nzbget",
   "dockerfile": "Dockerfile",
   "image": "ghcr.io/joejulian/container-images/nzbget",
-  "versionCommand": "nzbget --version | awk 'NR==1 {print $2}'"
+  "versionCommand": "nzbget --version | sed -n 's/^nzbget version: //p' | head -n1"
 }
-

@@ -38,3 +38,16 @@ To validate a single locally-built image:
 ./scripts/build-local.sh images/postfix
 ```
 
+To run image-local smoke tests:
+
+```sh
+./scripts/run-kuttl.sh images/mosquitto
+```
+
+## Publishing Notes
+
+Each published image is labeled with its source repository and revision.
+
+GitHub Container Registry package visibility is managed separately from repository
+visibility. After the first publish of a new image, ensure the package access and
+visibility settings match the intended deployment model.
