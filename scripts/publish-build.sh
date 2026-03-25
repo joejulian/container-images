@@ -25,10 +25,14 @@ if [[ -n "${version_command}" ]]; then
   tags+=("${image}:${version}")
 fi
 
+while IFS= read -r static_tag; do
+  [[ -n "${static_tag}" ]] || continue
+  tags+=("${image}:${static_tag}")
+done < <(jq -r '.staticTags[]? // empty' "${def}")
+
 tag_args=()
 for tag in "${tags[@]}"; do
   tag_args+=(-t "${tag}")
 done
 
 docker buildx build --push "${tag_args[@]}" -f "${context}/${dockerfile}" "${context}"
-

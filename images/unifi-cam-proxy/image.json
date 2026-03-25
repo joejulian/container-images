@@ -1,10 +1,10 @@
 {
   "name": "unifi-cam-proxy",
-  "type": "mirror",
-  "basePreference": "mirror",
-  "sourceImage": "ghcr.io/joejulian/unifi-cam-proxy",
+  "type": "build",
+  "basePreference": "alpine",
+  "context": "images/unifi-cam-proxy",
+  "dockerfile": "Dockerfile",
   "image": "ghcr.io/joejulian/container-images/unifi-cam-proxy",
-  "tags": ["20260315-2bf8e39-rtspcap4"],
-  "latestTag": "latest"
+  "latestTag": "latest",
+  "staticTags": ["20260315-2bf8e39-rtspcap4"]
 }
-
