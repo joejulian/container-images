@@ -8,7 +8,8 @@ while IFS= read -r dir; do
     .name != null and
     (.type == "build" or .type == "mirror") and
     .image != null and
-    .basePreference != null
+    .basePreference != null and
+    (.platforms == null or ((.platforms | type) == "array" and (.platforms | length) > 0))
   ' "${def}" >/dev/null || status=1
 
   kind="$(jq -r '.type' "${def}")"

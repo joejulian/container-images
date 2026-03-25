@@ -9,6 +9,7 @@ image="$(jq -r '.image' "${def}")"
 context="$(jq -r '.context' "${def}")"
 dockerfile="$(jq -r '.dockerfile' "${def}")"
 latest_tag="$(jq -r '.latestTag // "latest"' "${def}")"
+platforms="$(jq -r '(.platforms // ["linux/amd64"]) | join(",")' "${def}")"
 sha_tag="${GITHUB_SHA:-$(git rev-parse HEAD)}"
 sha_short="$(printf '%s' "${sha_tag}" | cut -c1-12)"
 source_url="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-joejulian/container-images}"
@@ -48,6 +49,7 @@ for tag in "${tags[@]}"; do
 done
 
 docker buildx build --push \
+  --platform "${platforms}" \
   --label "org.opencontainers.image.source=${source_url}" \
   --label "org.opencontainers.image.revision=${sha_tag}" \
   "${tag_args[@]}" \

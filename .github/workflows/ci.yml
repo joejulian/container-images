@@ -69,6 +69,18 @@ jobs:
           while IFS= read -r tag; do
             crane digest "${{ matrix.sourceImage }}:${tag}" >/dev/null
           done < <(jq -r '.tags[]' "${{ matrix.dir }}/image.json")
+          for tag in $(jq -r '.tags[] | select(length > 0)' "${{ matrix.dir }}/image.json"); do
+            manifest="$(crane manifest "${{ matrix.sourceImage }}:${tag}")"
+            while IFS= read -r platform; do
+              jq -e --arg platform "${platform}" '
+                ($platform | split("/")) as $parts
+                | any(.manifests[]?.platform?;
+                    .os == $parts[0] and
+                    .architecture == $parts[1] and
+                    (($parts | length) < 3 or .variant == $parts[2]))
+              ' <<< "${manifest}" >/dev/null
+            done < <(jq -r '.platforms[]? // empty' "${{ matrix.dir }}/image.json")
+          done
 
   kuttl:
     runs-on: ubuntu-latest

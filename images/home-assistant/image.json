@@ -2,6 +2,7 @@
   "name": "home-assistant",
   "type": "mirror",
   "basePreference": "mirror",
+  "platforms": ["linux/amd64", "linux/arm64"],
   "sourceImage": "ghcr.io/home-assistant/home-assistant",
   "image": "ghcr.io/joejulian/container-images/home-assistant",
   "tags": [

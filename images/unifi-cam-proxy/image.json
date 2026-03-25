@@ -2,6 +2,7 @@
   "name": "unifi-cam-proxy",
   "type": "build",
   "basePreference": "alpine",
+  "platforms": ["linux/amd64", "linux/arm64"],
   "context": "images/unifi-cam-proxy",
   "dockerfile": "Dockerfile",
   "image": "ghcr.io/joejulian/container-images/unifi-cam-proxy",

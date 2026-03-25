@@ -1,5 +1,5 @@
-FROM archlinux:latest
+FROM alpine:edge
 
-RUN pacman -Syu --noconfirm --needed grep postfix postfix-ldap postfix-cdb postfix-lmdb postfix-mysql postfix-pcre postfix-pgsql postfix-sqlite sed && pacman -Scc --noconfirm
+RUN apk add --no-cache grep postfix postfix-ldap postfix-pcre postfix-pgsql postfix-sqlite sed
 
 CMD ["postfix", "-c", "/config", "start-fg"]

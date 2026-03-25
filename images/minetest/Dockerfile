@@ -1,6 +1,5 @@
-FROM archlinux:latest
+FROM alpine:edge
 
-RUN pacman -Syu --noconfirm luanti-server && \
+RUN apk add --no-cache luanti && \
     mkdir -p /usr/games && \
-    ln -sf /usr/bin/luantiserver /usr/games/minetest && \
-    pacman -Scc --noconfirm
+    ln -sf /usr/bin/luantiserver /usr/games/minetest

@@ -1,10 +1,10 @@
 {
   "name": "postfix",
   "type": "build",
-  "basePreference": "archlinux",
+  "basePreference": "alpine",
+  "platforms": ["linux/amd64", "linux/arm64"],
   "context": "images/postfix",
   "dockerfile": "Dockerfile",
   "image": "ghcr.io/joejulian/container-images/postfix",
   "versionCommand": "postconf -d mail_version | awk '{print $3}'"
 }
-

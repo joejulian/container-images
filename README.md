@@ -25,6 +25,8 @@ New images should prefer bases in this order:
 
 When an Arch-based image is unavoidable, keep the published image version tied to the installed package version.
 Every `build` image must define `versionCommand`, and the published tags must include that application version.
+Images may declare `platforms` in `image.json`; build images publish for those platforms, and mirror
+images must have those platforms available upstream.
 
 ## Local Usage
 

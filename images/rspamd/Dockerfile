@@ -1,12 +1,7 @@
-FROM archlinux:latest
+FROM alpine:edge
 
-RUN pacman -Syu --needed --noconfirm \
-        rspamd \
-    && pacman -Scc --noconfirm \
-    && rm /var/cache/pacman/pkg/*
+RUN apk add --no-cache rspamd && \
+    mkdir -p /config /socket /secrets
 
-CMD mkdir -p /config /socket /secrets
-RUN useradd _rspamd
-
-USER _rspamd
-CMD rspamd -f
+USER rspamd
+CMD ["rspamd", "-f"]

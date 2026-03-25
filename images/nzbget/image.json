@@ -1,9 +1,10 @@
 {
   "name": "nzbget",
-  "type": "build",
-  "basePreference": "archlinux",
-  "context": "images/nzbget",
-  "dockerfile": "Dockerfile",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "platforms": ["linux/amd64", "linux/arm/v7", "linux/arm64"],
+  "sourceImage": "ghcr.io/nzbgetcom/nzbget",
   "image": "ghcr.io/joejulian/container-images/nzbget",
-  "versionCommand": "nzbget --version | sed -n 's/^nzbget version: //p' | head -n1"
+  "tags": ["v26.0"],
+  "latestTag": "latest"
 }
