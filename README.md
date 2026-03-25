@@ -49,5 +49,5 @@ To run image-local smoke tests:
 Each published image is labeled with its source repository and revision.
 
 GitHub Container Registry package visibility is managed separately from repository
-visibility. After the first publish of a new image, ensure the package access and
-visibility settings match the intended deployment model.
+visibility. The release workflow publishes mirrors with `skopeo copy --all` and
+then patches each GHCR package to `public`.
