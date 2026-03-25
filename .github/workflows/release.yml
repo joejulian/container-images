@@ -40,10 +40,6 @@ jobs:
       - name: Publish mirrored image
         if: matrix.type == 'mirror'
         run: ./scripts/publish-mirror.sh "${{ matrix.dir }}"
-      - name: Make package public
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./scripts/ensure-package-public.sh "${{ matrix.dir }}"
 
   matrix:
     runs-on: ubuntu-latest
