@@ -1,5 +1,7 @@
 FROM archlinux:latest AS build
 
+RUN pacman-key --init && pacman-key --populate archlinux
+
 RUN pacman -Syu --needed --noconfirm --ignore filesystem \
       archlinux-keyring \
       base-devel \
