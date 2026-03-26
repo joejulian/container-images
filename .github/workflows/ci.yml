@@ -108,7 +108,7 @@ jobs:
           fi
       - uses: docker/setup-buildx-action@v3
         if: steps.has-tests.outputs.present == 'true' && matrix.type == 'build'
-      - uses: azure/setup-kubectl@v4
+      - uses: azure/setup-kubectl@v5
         if: steps.has-tests.outputs.present == 'true'
       - name: Build local image for tests
         if: steps.has-tests.outputs.present == 'true' && matrix.type == 'build'
