@@ -4,9 +4,16 @@ on:
   pull_request_target:
     types:
       - opened
+      - labeled
       - synchronize
       - reopened
       - ready_for_review
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to auto-merge. Leave empty to scan open Dependabot action PRs.
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -14,29 +21,47 @@ permissions:
 
 jobs:
   automerge:
-    if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Enable auto-merge for GitHub Actions updates
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [[ "${{ github.event.pull_request.user.login }}" != "dependabot[bot]" ]]; then
+          enable_automerge() {
+            local pr_number="$1"
+            local pr_json
+
+            pr_json="$(gh pr view "${pr_number}" --json number,author,labels,isCrossRepository)"
+
+            if [[ "$(jq -r '.author.login' <<< "${pr_json}")" != "dependabot[bot]" ]]; then
+              return 0
+            fi
+            if [[ "$(jq -r '.isCrossRepository' <<< "${pr_json}")" == "true" ]]; then
+              return 0
+            fi
+            if ! jq -e '.labels | any(.name == "dependencies")' <<< "${pr_json}" >/dev/null; then
+              return 0
+            fi
+            if ! jq -e '.labels | any(.name == "github_actions")' <<< "${pr_json}" >/dev/null; then
+              return 0
+            fi
+
+            gh pr merge "${pr_number}" --auto --squash
+          }
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ -n "${{ inputs.pr_number }}" ]]; then
+              enable_automerge "${{ inputs.pr_number }}"
+              exit 0
+            fi
+
+            while IFS= read -r pr_number; do
+              enable_automerge "${pr_number}"
+            done < <(
+              gh pr list --search "is:open author:app/dependabot" --json number \
+                --jq '.[] | .number'
+            )
             exit 0
           fi
-          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
-            exit 0
-          fi
-          if ! jq -e '
-            .pull_request.labels
-            | any(.name == "dependencies")
-          ' "${GITHUB_EVENT_PATH}" >/dev/null; then
-            exit 0
-          fi
-          if ! jq -e '
-            .pull_request.labels
-            | any(.name == "github_actions")
-          ' "${GITHUB_EVENT_PATH}" >/dev/null; then
-            exit 0
-          fi
-          gh pr merge "${{ github.event.pull_request.number }}" --auto --squash
+
+          enable_automerge "${{ github.event.pull_request.number }}"
