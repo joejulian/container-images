@@ -1,0 +1,29 @@
+{
+  "source_directories": [
+    "./"
+  ],
+  "exclude": [
+    "build/"
+  ],
+  "ignore_all_errors": [
+    "build/",
+    "venv/",
+    "run/"
+  ],
+  "search_path": [
+    { "site-package": "aiohttp" },
+    { "site-package": "amcrest" },
+    { "site-package": "asyncio_mqtt" },
+    { "site-package": "backoff" },
+    { "site-package": "coloredlogs" },
+    { "site-package": "flvlib3" },
+    { "site-package": "hikvisionapi" },
+    { "site-package": "httpx" },
+    { "site-package": "packaging" },
+    { "site-package": "uiprotect" },
+    { "site-package": "reolinkapi" },
+    { "site-package": "websockets" },
+    { "site-package": "yarl" }
+  ],
+  "taint_models_path": "stubs/taint"
+}

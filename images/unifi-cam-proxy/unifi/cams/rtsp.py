@@ -51,18 +51,6 @@ class RTSPCam(UnifiCamBase):
             required=False,
             help="HTTP endpoint to fetch snapshot image from",
         )
-        parser.add_argument(
-            "--source-width",
-            type=int,
-            default=None,
-            help="Override detected RTSP source width for all advertised streams",
-        )
-        parser.add_argument(
-            "--source-height",
-            type=int,
-            default=None,
-            help="Override detected RTSP source height for all advertised streams",
-        )
 
     def start_snapshot_stream(self) -> None:
         if not self.snapshot_stream or self.snapshot_stream.poll() is not None:
@@ -124,12 +112,6 @@ class RTSPCam(UnifiCamBase):
     def get_stream_dimensions(self, stream_index: str) -> dict[str, int]:
         if stream_index == "mjpg":
             stream_index = "video1"
-
-        if self.args.source_width and self.args.source_height:
-            return {
-                "width": self.args.source_width,
-                "height": self.args.source_height,
-            }
 
         if stream_index not in self.stream_dimensions:
             self.stream_dimensions[stream_index] = self.probe_stream_dimensions(
