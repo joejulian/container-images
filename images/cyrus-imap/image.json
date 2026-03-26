@@ -2,7 +2,7 @@
   "name": "cyrus-imap",
   "type": "build",
   "basePreference": "archlinux",
-  "platforms": ["linux/amd64"],
+  "platforms": ["linux/amd64", "linux/arm64"],
   "context": "images/cyrus-imap",
   "dockerfile": "Dockerfile",
   "image": "ghcr.io/joejulian/container-images/cyrus-imap",

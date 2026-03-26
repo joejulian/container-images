@@ -2,7 +2,7 @@
   "name": "plex-media-server-plexpass",
   "type": "build",
   "basePreference": "archlinux",
-  "platforms": ["linux/amd64"],
+  "platforms": ["linux/amd64", "linux/arm64"],
   "context": "images/plex-media-server-plexpass",
   "dockerfile": "Dockerfile",
   "image": "ghcr.io/joejulian/container-images/plex-media-server-plexpass",

@@ -1,8 +1,10 @@
-FROM archlinux:latest as build
+FROM registry.gitlab.com/joejulian/oci-arch:latest as build
 LABEL plex-media-server-plexpass package builder
 
 ARG URL=https://aur.archlinux.org/cgit/aur.git/snapshot/plex-media-server-plexpass.tar.gz
 
+RUN pacman-key --init && pacman-key --populate archlinux
+RUN pacman -Syu --noconfirm --ignore filesystem archlinux-keyring
 RUN pacman -Sy --noconfirm binutils fakeroot file grep gzip tar sudo debugedit
 RUN mkdir -p /tmp/build && chmod 777 /tmp/build
 USER nobody
@@ -10,10 +12,12 @@ RUN curl -L --no-verbose $URL | tar -C /tmp/build -xzv
 WORKDIR /tmp/build/plex-media-server-plexpass
 RUN makepkg --noconfirm --nocolor --noprogressbar
 
-FROM archlinux:latest
+FROM registry.gitlab.com/joejulian/oci-arch:latest
 
 # install the package created from the previously run build container
 COPY --from=build /tmp/build/plex-media-server-plexpass/plex-media-server-plexpass*.tar.zst /var/cache/pacman/pkg/
+RUN pacman-key --init && pacman-key --populate archlinux
+RUN pacman --noconfirm -Syu --ignore filesystem archlinux-keyring
 RUN pacman --noconfirm -U /var/cache/pacman/pkg/plex-media-server-plexpass*.tar.zst
 RUN pacman --noconfirm -Syu
 RUN pacman --noconfirm -S --ignore filesystem --ignore systemd --ignore systemd-sysvcompat --assume-installed systemd-sysvcompat --assume-installed systemd --assume-installed wayland libva sudo && pacman --noconfirm -Sccc && rm -rf /var/cache/pacman

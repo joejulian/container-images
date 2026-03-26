@@ -1,4 +1,4 @@
-FROM archlinux:latest AS build
+FROM registry.gitlab.com/joejulian/oci-arch:latest AS build
 
 RUN pacman-key --init && pacman-key --populate archlinux
 
@@ -7,6 +7,7 @@ RUN pacman -Syu --needed --noconfirm --ignore filesystem \
       base-devel \
       git \
       go \
+      mariadb-libs \
       perl-module-install \
       python-pip \
       sudo
@@ -35,7 +36,7 @@ RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" perl-pod-pom-vi
 RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" cyrus-sasl-gssapi
 RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" cyrus-imapd
 
-FROM archlinux:latest
+FROM registry.gitlab.com/joejulian/oci-arch:latest
 VOLUME /config
 VOLUME /data
 COPY --from=build /tmp/.cache/yay/*/*.pkg.tar.zst /install/
