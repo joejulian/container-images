@@ -34,7 +34,10 @@ jobs:
 
             pr_json="$(gh pr view "${pr_number}" --repo "${GH_REPO}" --json number,author,labels,isCrossRepository)"
 
-            if [[ "$(jq -r '.author.login' <<< "${pr_json}")" != "dependabot[bot]" ]]; then
+            if [[ "$(jq -r '.author.is_bot' <<< "${pr_json}")" != "true" ]]; then
+              return 0
+            fi
+            if [[ "$(jq -r '.author.login' <<< "${pr_json}")" != "app/dependabot" ]]; then
               return 0
             fi
             if [[ "$(jq -r '.isCrossRepository' <<< "${pr_json}")" == "true" ]]; then
