@@ -26,12 +26,13 @@ jobs:
       - name: Enable auto-merge for GitHub Actions updates
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           enable_automerge() {
             local pr_number="$1"
             local pr_json
 
-            pr_json="$(gh pr view "${pr_number}" --json number,author,labels,isCrossRepository)"
+            pr_json="$(gh pr view "${pr_number}" --repo "${GH_REPO}" --json number,author,labels,isCrossRepository)"
 
             if [[ "$(jq -r '.author.login' <<< "${pr_json}")" != "dependabot[bot]" ]]; then
               return 0
@@ -46,7 +47,7 @@ jobs:
               return 0
             fi
 
-            gh pr merge "${pr_number}" --auto --squash
+            gh pr merge "${pr_number}" --repo "${GH_REPO}" --auto --squash
           }
 
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
@@ -58,7 +59,7 @@ jobs:
             while IFS= read -r pr_number; do
               enable_automerge "${pr_number}"
             done < <(
-              gh pr list --search "is:open author:app/dependabot" --json number \
+              gh pr list --repo "${GH_REPO}" --search "is:open author:app/dependabot" --json number \
                 --jq '.[] | .number'
             )
             exit 0
