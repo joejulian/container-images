@@ -6,5 +6,5 @@
   "context": "images/cyrus-imap",
   "dockerfile": "Dockerfile",
   "image": "ghcr.io/joejulian/container-images/cyrus-imap",
-  "versionCommand": "cyr_buildinfo 2>/dev/null | sed -n 's/.*\\\"CYRUS_VERSION\\\": \\\"\\([^\\\"]*\\)\\\".*/\\1/p'"
+  "versionCommand": "app=\"$(cyr_buildinfo 2>/dev/null | sed -n 's/.*\\\"CYRUS_VERSION\\\": \\\"\\([^\\\"]*\\)\\\".*/\\1/p')\"; fsyslog=\"$(cat /usr/local/share/fsyslog.version)\"; printf '%s-fsyslog.%s\\n' \"$app\" \"$fsyslog\""
 }

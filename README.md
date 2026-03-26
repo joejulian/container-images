@@ -54,7 +54,9 @@ Pull requests validate only the changed `images/<name>` entries, including any i
 `tests/kuttl` suites. Publishing on `main` only republishes changed images, and mirrored images
 are refreshed by a scheduled workflow that opens an auto-merge PR when upstream release tags move.
 Fully versioned application tags are immutable once published; subsequent rebuilds only move
-`latest` and commit-derived tags.
+`latest` and commit-derived tags. Images that embed `fsyslog` publish a semver-compatible
+suffix in the immutable version tag, for example `3.12.1-fsyslog.0.4.0`, so downstream
+Renovate consumers can detect container-only rebuilds without losing the upstream app version.
 Build images are also rebuilt on a nightly schedule so upstream-packaged applications such as
 Plex can publish new version tags to GHCR for downstream Renovate consumption.
 

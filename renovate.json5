@@ -1,0 +1,23 @@
+{
+  extends: [
+    "config:recommended",
+    ":rebaseStalePrs",
+  ],
+  packageRules: [
+    {
+      matchDatasources: ["git-tags"],
+      matchDepNames: ["gitlab.com/joejulian/fsyslog"],
+      automerge: true,
+      addLabels: ["dependencies", "automerge"],
+    },
+  ],
+  customManagers: [
+    {
+      customType: "regex",
+      managerFilePatterns: ["/(^|/)images\\/[^/]+\\/Dockerfile$/"],
+      matchStrings: [
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+) versioning=(?<versioning>[^\\s]+)\\nARG FSYSLOG_VERSION=(?<currentValue>[^\\s]+)",
+      ],
+    },
+  ],
+}
