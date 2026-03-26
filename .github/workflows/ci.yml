@@ -59,7 +59,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - run: chmod +x scripts/*.sh
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
       - name: Validate build image
         if: matrix.type == 'build'
         run: ./scripts/build-local.sh "${{ matrix.dir }}"
@@ -106,7 +106,7 @@ jobs:
           else
             printf 'present=false\n' >> "${GITHUB_OUTPUT}"
           fi
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
         if: steps.has-tests.outputs.present == 'true' && matrix.type == 'build'
       - uses: azure/setup-kubectl@v5
         if: steps.has-tests.outputs.present == 'true'
