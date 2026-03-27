@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${script_dir}/publish-common.sh"
+
 dir="${1:?image dir required}"
 def="${dir}/image.json"
 
@@ -12,6 +15,7 @@ publish_tag() {
   local dest_ref="$2"
 
   skopeo copy --all "docker://${source_ref}" "docker://${dest_ref}" >/dev/null
+  annotate_published_ref "${dest_ref}"
 }
 
 while IFS= read -r tag; do

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Shared package metadata keeps GHCR linked to the correct repository.
+source "${script_dir}/publish-common.sh"
+
 dir="${1:?image dir required}"
 def="${dir}/image.json"
 
@@ -12,7 +16,6 @@ latest_tag="$(jq -r '.latestTag // "latest"' "${def}")"
 platforms="$(jq -r '(.platforms // ["linux/amd64"]) | join(",")' "${def}")"
 sha_tag="${GITHUB_SHA:-$(git rev-parse HEAD)}"
 sha_short="$(printf '%s' "${sha_tag}" | cut -c1-12)"
-source_url="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-joejulian/container-images}"
 
 docker build \
   --label "org.opencontainers.image.source=${source_url}" \
@@ -56,6 +59,10 @@ docker buildx build --push \
   -f "${context}/${dockerfile}" \
   "${context}"
 
+for tag in "${tags[@]}"; do
+  annotate_published_ref "${tag}"
+done
+
 if docker buildx imagetools inspect "${image}:${version}" >/dev/null 2>&1; then
   printf 'version tag %s:%s already exists, leaving it unchanged\n' "${image}" "${version}"
   exit 0
@@ -64,3 +71,5 @@ fi
 docker buildx imagetools create \
   --tag "${image}:${version}" \
   "${image}:sha-${sha_short}"
+
+annotate_published_ref "${image}:${version}"

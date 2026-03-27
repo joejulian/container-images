@@ -8,11 +8,15 @@ head_ref="${3:-HEAD}"
 declare -a dirs=()
 
 if [[ "${mode}" == "changed" && -n "${base_ref}" && "${base_ref}" != "0000000000000000000000000000000000000000" ]]; then
-  mapfile -t dirs < <(
-    git diff --name-only "${base_ref}" "${head_ref}" -- images \
-      | awk -F/ 'NF >= 2 { print $1 "/" $2 }' \
-      | sort -u
-  )
+  if git diff --name-only "${base_ref}" "${head_ref}" -- .github/workflows scripts | grep -q .; then
+    mapfile -t dirs < <(./scripts/list-images.sh)
+  else
+    mapfile -t dirs < <(
+      git diff --name-only "${base_ref}" "${head_ref}" -- images \
+        | awk -F/ 'NF >= 2 { print $1 "/" $2 }' \
+        | sort -u
+    )
+  fi
 else
   mapfile -t dirs < <(./scripts/list-images.sh)
 fi
