@@ -20,14 +20,14 @@ RUN GO111MODULE=on GOPATH=/go GOBIN=/go/bin go install gitlab.com/joejulian/fsys
 COPY alpm.sudo /etc/sudoers.d/alpm
 RUN chmod 400 /etc/sudoers.d/alpm
 
+RUN sed -i '/^DisableSandbox$/d' /etc/pacman.conf && \
+    sed -i '/^\[options\]$/a DisableSandbox' /etc/pacman.conf
+
 RUN mkdir -p /build && chown alpm:alpm /build
 COPY *.patch /build
 WORKDIR /build
 USER alpm
 ENV HOME=/tmp
-
-RUN sudo sed -i '/^DisableSandbox$/d' /etc/pacman.conf && \
-    sudo sed -i '/^\[options\]$/a DisableSandbox' /etc/pacman.conf
 
 RUN cat /etc/pam.d/sudo && ls /etc/pam.d/ && sudo id
 RUN git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm
