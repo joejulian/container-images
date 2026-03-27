@@ -14,8 +14,7 @@ RUN pacman -Syu --needed --noconfirm --ignore filesystem \
 
 # renovate: datasource=git-tags depName=gitlab.com/joejulian/fsyslog versioning=semver
 ARG FSYSLOG_VERSION=v0.4.0
-RUN GO111MODULE=on GOPATH=/go GOBIN=/go/bin go install gitlab.com/joejulian/fsyslog@"${FSYSLOG_VERSION}" && \
-    printf '%s\n' "${FSYSLOG_VERSION#v}" > /tmp/fsyslog.version
+RUN GO111MODULE=on GOPATH=/go GOBIN=/go/bin go install gitlab.com/joejulian/fsyslog@"${FSYSLOG_VERSION}"
 
 COPY alpm.sudo /etc/sudoers.d/alpm
 RUN chmod 400 /etc/sudoers.d/alpm
@@ -44,7 +43,6 @@ VOLUME /config
 VOLUME /data
 COPY --from=build /tmp/.cache/yay/*/*.pkg.tar.zst /install/
 COPY --from=build /go/bin/fsyslog /bin
-COPY --from=build /tmp/fsyslog.version /usr/local/share/fsyslog.version
 COPY services /etc/services
 RUN pacman -Syu --noconfirm --disable-sandbox --ignore filesystem && \
     pacman -U --noconfirm --disable-sandbox /install/* && \

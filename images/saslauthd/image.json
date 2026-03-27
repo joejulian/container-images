@@ -6,5 +6,5 @@
   "context": "images/saslauthd",
   "dockerfile": "Dockerfile",
   "image": "ghcr.io/joejulian/container-images/saslauthd",
-  "versionCommand": "app=\"$(apk info -vv 2>/dev/null | sed -n 's/^cyrus-sasl-//p' | sed -n '1s/ - .*//p' | sed -n '1s/-r/-/p')\"; fsyslog=\"$(cat /usr/local/share/fsyslog.version)\"; printf '%s-fsyslog.%s\\n' \"$app\" \"$fsyslog\""
+  "versionCommand": "apk info -vv 2>/dev/null | sed -n 's/^cyrus-sasl-//p' | sed -n '1s/ - .*//p' | sed -n '1s/-r/-/p'"
 }
