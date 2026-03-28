@@ -28,7 +28,6 @@ WORKDIR /build
 USER alpm
 ENV HOME=/tmp
 
-RUN cat /etc/pam.d/sudo && ls /etc/pam.d/ && sudo id
 RUN git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm
 
 RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" sphinx
