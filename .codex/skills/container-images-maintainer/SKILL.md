@@ -31,6 +31,7 @@ Use this skill when working in `joejulian/container-images`.
 - Keep immutable release tags tied to the underlying application version.
 - Do not introduce non-semver release tag schemes to represent rebuild-only changes.
 - Use moving tags such as `latest` and `sha-*` for rebuild churn; keep fully versioned tags immutable.
+- Add or keep mirrored images only when the upstream image is on Docker Hub, or when upstream tagging is non-semver and this repo can still map the image back to an application semver.
 - Keep new Dockerfile-managed dependency pins Renovate-friendly with explicit annotations and simple `ARG` values.
 
 ## Review Checklist

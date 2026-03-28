@@ -14,6 +14,8 @@ This repository builds and publishes OCI images from `images/<name>/` definition
 - Keep image versioning tied to the underlying application version. Do not invent extra immutable version tags that break strict semver ordering.
 - `latest` and commit-derived tags may move; fully versioned application tags are immutable once published.
 - If an image embeds another tool such as `fsyslog`, allow that dependency to auto-update in the Dockerfile, but do not change the immutable published version tag unless the application version changes.
+- Mirror images only when the upstream image is on Docker Hub, or when the upstream registry does not publish a usable semver tag.
+- For non-semver upstream tags, only mirror the image if this repo can still determine and publish the actual application semver locally.
 - Use `image.json` plus `scripts/publish-build.sh` or `scripts/publish-mirror.sh` as the design boundary. Do not duplicate version/tag rules ad hoc in workflows.
 - Prefer the documented base image order: `scratch`, distroless, `alpine`, then `archlinux`.
 
