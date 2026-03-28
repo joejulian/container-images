@@ -31,7 +31,7 @@ This repository builds and publishes OCI images from `images/<name>/` definition
 - CI validates only changed image definitions on pull requests and pushes.
 - Release publishes only the changed images on `main`; the nightly schedule rebuilds `build` images to pick up upstream package updates.
 - GHCR publishing uses `GITHUB_TOKEN`; do not replace it with unrelated credentials or use it for Docker logins outside GitHub Actions.
-- Package visibility is separate from repository visibility. If a newly published package needs anonymous pulls, adjust package visibility in GHCR settings.
+- Package visibility is separate from repository visibility. Packages published from this repo are expected to allow anonymous pulls; if a newly published package lands private, fix the GHCR package visibility.
 
 ## Renovate
 
