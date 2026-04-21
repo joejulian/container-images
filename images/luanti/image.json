@@ -1,0 +1,11 @@
+{
+  "name": "luanti",
+  "type": "build",
+  "basePreference": "alpine",
+  "platforms": ["linux/amd64", "linux/arm64"],
+  "context": "images/luanti",
+  "dockerfile": "Dockerfile",
+  "image": "ghcr.io/joejulian/container-images/luanti",
+  "latestTag": "latest",
+  "versionCommand": "apk info -vv 2>/dev/null | sed -n 's/^luanti-server-//p' | sed -n '1s/ - .*//p'"
+}
