@@ -40,6 +40,7 @@ RUN pacman -S --noconfirm \
       rsync \
       shapelib \
       unixodbc \
+      tinyxxd \
       xapian-core \
       zlib
 
