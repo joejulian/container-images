@@ -18,6 +18,7 @@ RUN GO111MODULE=on GOPATH=/go GOBIN=/go/bin go install gitlab.com/joejulian/fsys
 
 COPY alpm.sudo /etc/sudoers.d/alpm
 RUN chmod 400 /etc/sudoers.d/alpm
+RUN chage -E -1 alpm
 
 RUN sed -i '/^DisableSandbox$/d' /etc/pacman.conf && \
     sed -i '/^\[options\]$/a DisableSandbox' /etc/pacman.conf
@@ -25,22 +26,44 @@ RUN sed -i '/^DisableSandbox$/d' /etc/pacman.conf && \
 RUN mkdir -p /build && chown alpm:alpm /build
 COPY *.patch /build
 WORKDIR /build
-USER alpm
-ENV HOME=/tmp
 
-RUN git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm
+RUN pacman -S --noconfirm \
+      clamav \
+      cunit \
+      cyrus-sasl-gssapi \
+      krb5 \
+      libchardet \
+      libwslay \
+      lmdb \
+      perl-pod-pom \
+      postgresql-libs \
+      rsync \
+      shapelib \
+      unixodbc \
+      xapian-core \
+      zlib
 
-RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" sphinx
-RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" lmdb
-RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" krb5
-RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" perl-pod-pom-view-restructured
-RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" cyrus-sasl-gssapi
-RUN yay -S --noconfirm --mflags "--skippgpcheck --skipchecksums" cyrus-imapd
+RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && git clone https://aur.archlinux.org/sphinx.git && cd sphinx && makepkg -A --noconfirm --skippgpcheck --skipchecksums" && \
+    find /build/sphinx -maxdepth 1 -name '*.pkg.tar.*' -exec pacman -U --noconfirm {} +
+RUN pacman -S --noconfirm \
+      cmake \
+      doxygen \
+      gobject-introspection \
+      gtk-doc \
+      ninja \
+      python-gobject \
+      vala
+RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && git clone https://aur.archlinux.org/libical3.git && cd libical3 && makepkg -A --noconfirm --skippgpcheck --skipchecksums" && \
+    find /build/libical3 -maxdepth 1 -name '*.pkg.tar.*' -exec pacman -U --noconfirm {} +
+RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && git clone https://aur.archlinux.org/perl-pod-pom-view-restructured.git && cd perl-pod-pom-view-restructured && makepkg -A --noconfirm --skippgpcheck --skipchecksums" && \
+    find /build/perl-pod-pom-view-restructured -maxdepth 1 -name '*.pkg.tar.*' -exec pacman -U --noconfirm {} +
+RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && git clone https://aur.archlinux.org/cyrus-imapd.git && cd cyrus-imapd && makepkg -A --noconfirm --skippgpcheck --skipchecksums --nocheck" && \
+    find /build/cyrus-imapd -maxdepth 1 -name '*.pkg.tar.*' -exec pacman -U --noconfirm {} +
 
 FROM registry.gitlab.com/joejulian/oci-arch:latest
 VOLUME /config
 VOLUME /data
-COPY --from=build /tmp/.cache/yay/*/*.pkg.tar.zst /install/
+COPY --from=build /build/*/*.pkg.tar.* /install/
 COPY --from=build /go/bin/fsyslog /bin
 COPY services /etc/services
 RUN pacman -Syu --noconfirm --disable-sandbox --ignore filesystem && \

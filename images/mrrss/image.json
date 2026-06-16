@@ -6,7 +6,7 @@
   "sourceImage": "ghcr.io/wcy-dt/mrrss",
   "image": "ghcr.io/joejulian/container-images/mrrss",
   "tags": [
-    "1.3.22"
+    "1.3.23"
   ],
   "latestTag": "latest"
 }

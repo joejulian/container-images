@@ -3,11 +3,23 @@ set -euo pipefail
 
 find_latest_version_tag() {
   local source_image="$1"
+  local prefix="$2"
+  local tags
+  local latest
 
-  crane ls "${source_image}" \
-    | grep -E '^[0-9]+(\.[0-9]+)+$' \
-    | sort -V \
-    | tail -n1
+  if ! tags="$(crane ls "${source_image}")"; then
+    return 1
+  fi
+
+  latest="$(
+    printf '%s\n' "${tags}" \
+      | grep -E "^${prefix}[0-9]+(\.[0-9]+)+$" \
+      | sort -V \
+      | tail -n1 \
+      || true
+  )"
+  [[ -n "${latest}" ]] || return 2
+  printf '%s\n' "${latest}"
 }
 
 while IFS= read -r dir; do
@@ -17,13 +29,21 @@ while IFS= read -r dir; do
   fi
 
   source_image="$(jq -r '.sourceImage' "${def}")"
-  latest_version_tag="$(find_latest_version_tag "${source_image}")"
-  [[ -n "${latest_version_tag}" ]] || continue
+  if jq -e '.tags[] | select(test("^v[0-9]+(\\.[0-9]+)+$"))' "${def}" >/dev/null; then
+    prefix="v"
+  else
+    prefix=""
+  fi
+
+  if ! latest_version_tag="$(find_latest_version_tag "${source_image}" "${prefix}")"; then
+    printf 'skipping %s: no matching semver tags found for %s\n' "${dir}" "${source_image}" >&2
+    continue
+  fi
 
   updated="$(
-    jq --arg latest "${latest_version_tag}" '
+    jq --arg latest "${latest_version_tag}" --arg prefix "${prefix}" '
       .tags |= map(
-        if test("^[0-9]+(\\.[0-9]+)+$") then
+        if test("^" + $prefix + "[0-9]+(\\.[0-9]+)+$") then
           $latest
         else
           .
@@ -32,7 +52,7 @@ while IFS= read -r dir; do
     ' "${def}"
   )"
 
-  if [[ "${updated}" != "$(cat "${def}")" ]]; then
+  if [[ "$(jq -c '.tags' <<< "${updated}")" != "$(jq -c '.tags' "${def}")" ]]; then
     printf '%s\n' "${updated}" > "${def}"
   fi
 done < <(./scripts/list-images.sh)

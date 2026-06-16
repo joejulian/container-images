@@ -5,6 +5,6 @@
   "platforms": ["linux/amd64", "linux/arm/v7", "linux/arm64"],
   "sourceImage": "ghcr.io/nzbgetcom/nzbget",
   "image": "ghcr.io/joejulian/container-images/nzbget",
-  "tags": ["v26.0"],
+  "tags": ["v26.1"],
   "latestTag": "latest"
 }
