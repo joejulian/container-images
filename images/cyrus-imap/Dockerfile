@@ -40,9 +40,9 @@ RUN pacman -S --noconfirm \
       rsync \
       shapelib \
       unixodbc \
-      tinyxxd \
       xapian-core \
       zlib
+RUN pacman -T xxd >/dev/null || pacman -S --noconfirm tinyxxd
 
 RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && git clone https://aur.archlinux.org/sphinx.git && cd sphinx && makepkg -A --noconfirm --skippgpcheck --skipchecksums" && \
     find /build/sphinx -maxdepth 1 -name '*.pkg.tar.*' -exec pacman -U --noconfirm {} +
