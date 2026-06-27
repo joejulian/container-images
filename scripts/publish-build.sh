@@ -13,7 +13,8 @@ image="$(jq -r '.image' "${def}")"
 context="$(jq -r '.context' "${def}")"
 dockerfile="$(jq -r '.dockerfile' "${def}")"
 latest_tag="$(jq -r '.latestTag // "latest"' "${def}")"
-platforms="$(jq -r '(.platforms // ["linux/amd64"]) | join(",")' "${def}")"
+mapfile -t required_platforms < <(jq -r '(.platforms // ["linux/amd64"])[]' "${def}")
+platforms="$(IFS=,; printf '%s' "${required_platforms[*]}")"
 sha_tag="${GITHUB_SHA:-$(git rev-parse HEAD)}"
 sha_short="$(printf '%s' "${sha_tag}" | cut -c1-12)"
 
@@ -63,13 +64,48 @@ for tag in "${tags[@]}"; do
   annotate_published_ref "${tag}"
 done
 
-if docker buildx imagetools inspect "${image}:${version}" >/dev/null 2>&1; then
-  printf 'version tag %s:%s already exists, leaving it unchanged\n' "${image}" "${version}"
-  exit 0
+version_ref="${image}:${version}"
+if existing_manifest="$(docker buildx imagetools inspect --raw "${version_ref}" 2>/dev/null)"; then
+  missing_platforms=()
+  for platform in "${required_platforms[@]}"; do
+    IFS=/ read -r platform_os platform_arch platform_variant platform_extra <<< "${platform}"
+    if [[ -n "${platform_extra:-}" || -z "${platform_os}" || -z "${platform_arch}" ]]; then
+      printf 'invalid platform %s for image %s\n' "${platform}" "${name}" >&2
+      exit 1
+    fi
+
+    if ! jq -e \
+      --arg os "${platform_os}" \
+      --arg arch "${platform_arch}" \
+      --arg variant "${platform_variant:-}" \
+      '
+        if .manifests then
+          any(.manifests[]?.platform?;
+            .os == $os and
+            .architecture == $arch and
+            ($variant == "" or .variant == $variant))
+        else
+          .os == $os and
+          .architecture == $arch and
+          ($variant == "" or .variant == $variant)
+        end
+      ' <<< "${existing_manifest}" >/dev/null; then
+      missing_platforms+=("${platform}")
+    fi
+  done
+
+  if [[ ${#missing_platforms[@]} -eq 0 ]]; then
+    printf 'version tag %s already exists with all required platforms, leaving it unchanged\n' "${version_ref}"
+    exit 0
+  fi
+
+  printf 'version tag %s exists but is missing required platforms: %s\n' \
+    "${version_ref}" "${missing_platforms[*]}"
+  printf 'recreating %s from %s:sha-%s\n' "${version_ref}" "${image}" "${sha_short}"
 fi
 
 docker buildx imagetools create \
-  --tag "${image}:${version}" \
+  --tag "${version_ref}" \
   "${image}:sha-${sha_short}"
 
-annotate_published_ref "${image}:${version}"
+annotate_published_ref "${version_ref}"
