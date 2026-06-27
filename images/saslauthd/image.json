@@ -6,5 +6,5 @@
   "context": "images/saslauthd",
   "dockerfile": "Dockerfile",
   "image": "ghcr.io/joejulian/container-images/saslauthd",
-  "versionCommand": "apk info -vv 2>/dev/null | sed -n 's/^cyrus-sasl-//p' | sed -n '1s/ - .*//p' | sed -n '1s/-r/-/p'"
+  "versionCommand": "dpkg-query -W -f='${Version}\\n' sasl2-bin | sed -n '1s/+dfsg[0-9]*//p'"
 }

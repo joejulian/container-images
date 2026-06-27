@@ -4,9 +4,14 @@ ENV GOTOOLCHAIN=auto
 ARG FSYSLOG_VERSION=v0.4.0
 RUN CGO_ENABLED=0 go install gitlab.com/joejulian/fsyslog@"${FSYSLOG_VERSION}"
 
-FROM alpine:edge
+FROM debian:trixie-slim
 
-RUN apk add --no-cache cyrus-sasl
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      ca-certificates \
+      libsasl2-modules-ldap \
+      sasl2-bin && \
+    rm -rf /var/lib/apt/lists/*
 COPY --from=fsyslog /go/bin/fsyslog /bin/fsyslog
 
 CMD ["fsyslog", "-command", "saslauthd -d -a ldap -O /config/saslauthd.conf -m /socket"]
