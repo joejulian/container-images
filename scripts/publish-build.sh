@@ -94,13 +94,18 @@ if existing_manifest="$(docker buildx imagetools inspect --raw "${version_ref}" 
     fi
   done
 
-  if [[ ${#missing_platforms[@]} -eq 0 ]]; then
+  if [[ ${#missing_platforms[@]} -eq 0 && "${RECREATE_VERSION_TAG:-}" != "1" ]]; then
     printf 'version tag %s already exists with all required platforms, leaving it unchanged\n' "${version_ref}"
     exit 0
   fi
 
-  printf 'version tag %s exists but is missing required platforms: %s\n' \
-    "${version_ref}" "${missing_platforms[*]}"
+  if [[ ${#missing_platforms[@]} -eq 0 ]]; then
+    printf 'version tag %s exists with all required platforms but RECREATE_VERSION_TAG=1 was set\n' \
+      "${version_ref}"
+  else
+    printf 'version tag %s exists but is missing required platforms: %s\n' \
+      "${version_ref}" "${missing_platforms[*]}"
+  fi
   printf 'recreating %s from %s:sha-%s\n' "${version_ref}" "${image}" "${sha_short}"
 fi
 
