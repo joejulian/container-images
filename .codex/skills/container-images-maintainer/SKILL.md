@@ -31,7 +31,7 @@ Use this skill when working in `joejulian/container-images`.
 - Keep immutable release tags tied to the underlying application version.
 - Do not introduce non-semver release tag schemes to represent rebuild-only changes.
 - Treat every published image tag as immutable except `latest`, which is the only allowed moving channel.
-- Never publish production image refs manually from a workstation. Use the GitHub Actions release workflow.
+- Never publish production image refs manually from a workstation. Use the GitHub Actions release workflow by pushing a version tag.
 - Use semantic version tags for image releases; use image digests in deployment manifests when stronger immutability is required.
 - Add or keep mirrored images only when the upstream image is on Docker Hub, or when upstream tagging is non-semver and this repo can still map the image back to an application semver.
 - Keep new Dockerfile-managed dependency pins Renovate-friendly with explicit annotations and simple `ARG` values.
