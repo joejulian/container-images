@@ -3,6 +3,7 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${script_dir}/publish-common.sh"
+require_github_actions_publish
 
 dir="${1:?image dir required}"
 def="${dir}/image.json"
@@ -13,6 +14,11 @@ latest_tag="$(jq -r '.latestTag // empty' "${def}")"
 publish_tag() {
   local source_ref="$1"
   local dest_ref="$2"
+
+  if ! is_mutable_ref "${dest_ref}" && publish_ref_exists "${dest_ref}"; then
+    printf 'immutable image tag %s already exists; not publishing it again\n' "${dest_ref}"
+    return 0
+  fi
 
   skopeo copy --all "docker://${source_ref}" "docker://${dest_ref}" >/dev/null
   annotate_published_ref "${dest_ref}"

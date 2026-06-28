@@ -4,6 +4,7 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Shared package metadata keeps GHCR linked to the correct repository.
 source "${script_dir}/publish-common.sh"
+require_github_actions_publish
 
 dir="${1:?image dir required}"
 def="${dir}/image.json"
@@ -16,7 +17,6 @@ latest_tag="$(jq -r '.latestTag // "latest"' "${def}")"
 mapfile -t required_platforms < <(jq -r '(.platforms // ["linux/amd64"])[]' "${def}")
 platforms="$(IFS=,; printf '%s' "${required_platforms[*]}")"
 sha_tag="${GITHUB_SHA:-$(git rev-parse HEAD)}"
-sha_short="$(printf '%s' "${sha_tag}" | cut -c1-12)"
 
 docker build \
   --label "org.opencontainers.image.source=${source_url}" \
@@ -27,7 +27,6 @@ docker build \
 
 tags=(
   "${image}:${latest_tag}"
-  "${image}:sha-${sha_short}"
 )
 
 version_command="$(jq -r '.versionCommand // empty' "${def}")"
@@ -49,6 +48,10 @@ done < <(jq -r '.staticTags[]? // empty' "${def}")
 
 tag_args=()
 for tag in "${tags[@]}"; do
+  if ! is_mutable_ref "${tag}" && publish_ref_exists "${tag}"; then
+    printf 'immutable image tag %s already exists; not publishing it again\n' "${tag}"
+    continue
+  fi
   tag_args+=(-t "${tag}")
 done
 
@@ -65,52 +68,13 @@ for tag in "${tags[@]}"; do
 done
 
 version_ref="${image}:${version}"
-if existing_manifest="$(docker buildx imagetools inspect --raw "${version_ref}" 2>/dev/null)"; then
-  missing_platforms=()
-  for platform in "${required_platforms[@]}"; do
-    IFS=/ read -r platform_os platform_arch platform_variant platform_extra <<< "${platform}"
-    if [[ -n "${platform_extra:-}" || -z "${platform_os}" || -z "${platform_arch}" ]]; then
-      printf 'invalid platform %s for image %s\n' "${platform}" "${name}" >&2
-      exit 1
-    fi
-
-    if ! jq -e \
-      --arg os "${platform_os}" \
-      --arg arch "${platform_arch}" \
-      --arg variant "${platform_variant:-}" \
-      '
-        if .manifests then
-          any(.manifests[]?.platform?;
-            .os == $os and
-            .architecture == $arch and
-            ($variant == "" or .variant == $variant))
-        else
-          .os == $os and
-          .architecture == $arch and
-          ($variant == "" or .variant == $variant)
-        end
-      ' <<< "${existing_manifest}" >/dev/null; then
-      missing_platforms+=("${platform}")
-    fi
-  done
-
-  if [[ ${#missing_platforms[@]} -eq 0 && "${RECREATE_VERSION_TAG:-}" != "1" ]]; then
-    printf 'version tag %s already exists with all required platforms, leaving it unchanged\n' "${version_ref}"
-    exit 0
-  fi
-
-  if [[ ${#missing_platforms[@]} -eq 0 ]]; then
-    printf 'version tag %s exists with all required platforms but RECREATE_VERSION_TAG=1 was set\n' \
-      "${version_ref}"
-  else
-    printf 'version tag %s exists but is missing required platforms: %s\n' \
-      "${version_ref}" "${missing_platforms[*]}"
-  fi
-  printf 'recreating %s from %s:sha-%s\n' "${version_ref}" "${image}" "${sha_short}"
+if publish_ref_exists "${version_ref}"; then
+  printf 'version tag %s already exists; immutable tags are never recreated\n' "${version_ref}"
+  exit 0
 fi
 
 docker buildx imagetools create \
   --tag "${version_ref}" \
-  "${image}:sha-${sha_short}"
+  "${image}:${latest_tag}"
 
 annotate_published_ref "${version_ref}"
