@@ -7,7 +7,7 @@ import os
 import subprocess
 import sys
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 
 
 if len(sys.argv) > 1 and sys.argv[1] == "--version":
