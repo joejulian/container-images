@@ -41,6 +41,21 @@ if [[ -z "${version}" ]]; then
   exit 1
 fi
 
+if [[ -n "${RELEASE_TAG_NAME:-}" ]]; then
+  release_image="${RELEASE_TAG_NAME%%/*}"
+  release_version="${RELEASE_TAG_NAME#*/}"
+  release_version="${release_version#v}"
+
+  if [[ "${release_image}" != "${name}" ]]; then
+    printf 'release tag image %s does not match image %s\n' "${release_image}" "${name}" >&2
+    exit 1
+  fi
+  if [[ "${release_version}" != "${version}" ]]; then
+    printf 'release tag version %s does not match image version %s\n' "${release_version}" "${version}" >&2
+    exit 1
+  fi
+fi
+
 while IFS= read -r static_tag; do
   [[ -n "${static_tag}" ]] || continue
   tags+=("${image}:${static_tag}")

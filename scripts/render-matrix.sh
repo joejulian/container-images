@@ -14,8 +14,19 @@ if [[ "${mode}" == "changed" && -n "${base_ref}" && "${base_ref}" != "0000000000
     mapfile -t dirs < <(
       git diff --name-only "${base_ref}" "${head_ref}" -- images \
         | awk -F/ 'NF >= 2 { print $1 "/" $2 }' \
-        | sort -u
+      | sort -u
     )
+  fi
+elif [[ "${mode}" == "image" && -n "${base_ref}" ]]; then
+  while IFS= read -r dir; do
+    if [[ "$(jq -r '.name' "${dir}/image.json")" == "${base_ref}" ]]; then
+      dirs+=("${dir}")
+    fi
+  done < <(./scripts/list-images.sh)
+
+  if [[ ${#dirs[@]} -eq 0 ]]; then
+    printf 'unknown image %s\n' "${base_ref}" >&2
+    exit 1
   fi
 else
   mapfile -t dirs < <(./scripts/list-images.sh)
