@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "android-update-server"
-version = "0.1.0"
+version = "0.1.1"
 description = "Small authenticated repository for Android OTA and managed application releases"
 requires-python = ">=3.11"
 

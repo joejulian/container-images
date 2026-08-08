@@ -67,6 +67,9 @@ class UpdateRepositoryHandler(BaseHTTPRequestHandler):
         self._handle_read(send_body=False)
 
     def do_PUT(self) -> None:  # noqa: N802
+        # Upload responses close the connection so that request bodies left unread by
+        # early validation failures cannot be parsed as another HTTP/1.1 request.
+        self.close_connection = True
         path = self._request_path()
         if not self._authorized():
             self._send_error(HTTPStatus.UNAUTHORIZED, "valid bearer token required")
@@ -402,6 +405,8 @@ class UpdateRepositoryHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
+        if self.close_connection:
+            self.send_header("Connection", "close")
         self.end_headers()
         if send_body:
             self.wfile.write(body)

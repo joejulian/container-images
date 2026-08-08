@@ -74,6 +74,7 @@ class UpdateServerTest(unittest.TestCase):
                 headers={"X-Checksum-Sha256": hashlib.sha256(content).hexdigest()},
             )
         self.assertEqual(context.exception.code, 401)
+        self.assertEqual(context.exception.headers["Connection"], "close")
         context.exception.close()
 
         self.publish_artifact("rock4se/release.zip", content)
