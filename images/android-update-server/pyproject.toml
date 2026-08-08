@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "android-update-server"
+version = "0.1.0"
+description = "Small authenticated repository for Android OTA and managed application releases"
+requires-python = ">=3.11"
+
+[project.scripts]
+android-update-server = "android_update_server.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

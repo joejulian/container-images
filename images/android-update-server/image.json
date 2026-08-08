@@ -1,0 +1,11 @@
+{
+  "name": "android-update-server",
+  "type": "build",
+  "basePreference": "alpine",
+  "platforms": ["linux/amd64", "linux/arm64"],
+  "context": "images/android-update-server",
+  "dockerfile": "Dockerfile",
+  "image": "ghcr.io/joejulian/container-images/android-update-server",
+  "latestTag": "latest",
+  "versionCommand": "android-update-server --version"
+}
