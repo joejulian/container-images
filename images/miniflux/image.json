@@ -2,11 +2,15 @@
   "name": "miniflux",
   "type": "mirror",
   "basePreference": "mirror",
-  "platforms": ["linux/amd64", "linux/arm/v7", "linux/arm64"],
+  "platforms": [
+    "linux/amd64",
+    "linux/arm/v7",
+    "linux/arm64"
+  ],
   "sourceImage": "ghcr.io/miniflux/miniflux",
   "image": "ghcr.io/joejulian/container-images/miniflux",
   "tags": [
-    "2.3.1"
+    "2.3.3"
   ],
   "latestTag": "latest"
 }
