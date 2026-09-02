@@ -23,4 +23,6 @@ while IFS= read -r dir; do
   esac
 done < <(./scripts/list-images.sh)
 
+./scripts/test-publish-common.sh || status=1
+
 exit "${status}"

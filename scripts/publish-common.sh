@@ -11,6 +11,34 @@ require_github_actions_publish() {
   fi
 }
 
+validate_release_tag() {
+  local image_name="${1:?image name required}"
+  local image_version="${2:?image version required}"
+
+  if [[ "${GITHUB_REF_TYPE:-}" != "tag" ]]; then
+    return 0
+  fi
+
+  local release_tag="${RELEASE_TAG_NAME:-}"
+  if [[ -z "${release_tag}" || "${release_tag}" != */* ]]; then
+    printf 'tag releases require an image-scoped release tag\n' >&2
+    return 1
+  fi
+
+  local release_image="${release_tag%%/*}"
+  local release_version="${release_tag#*/}"
+  release_version="${release_version#v}"
+
+  if [[ "${release_image}" != "${image_name}" ]]; then
+    printf 'release tag image %s does not match image %s\n' "${release_image}" "${image_name}" >&2
+    return 1
+  fi
+  if [[ "${release_version}" != "${image_version}" ]]; then
+    printf 'release tag version %s does not match image version %s\n' "${release_version}" "${image_version}" >&2
+    return 1
+  fi
+}
+
 is_mutable_ref() {
   local image_ref="${1:?image ref required}"
   local tag="${image_ref##*:}"
