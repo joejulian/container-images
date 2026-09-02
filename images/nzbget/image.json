@@ -10,7 +10,7 @@
   "sourceImage": "ghcr.io/nzbgetcom/nzbget",
   "image": "ghcr.io/joejulian/container-images/nzbget",
   "tags": [
-    "v26.2"
+    "v26.3"
   ],
   "latestTag": "latest"
 }
