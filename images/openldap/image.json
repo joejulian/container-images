@@ -1,0 +1,10 @@
+{
+  "name": "openldap",
+  "type": "build",
+  "basePreference": "archlinux",
+  "platforms": ["linux/amd64", "linux/arm64"],
+  "context": "images/openldap",
+  "dockerfile": "Dockerfile",
+  "image": "ghcr.io/joejulian/container-images/openldap",
+  "versionCommand": "pacman -Q openldap | awk '{print $2}'"
+}

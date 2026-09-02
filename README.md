@@ -52,7 +52,8 @@ To run image-local smoke tests:
 Each published image is labeled with its source repository and revision.
 Pull requests validate only the changed `images/<name>` entries, including any image-local
 `tests/kuttl` suites. Publishing on `main` only republishes changed images, and mirrored images
-are refreshed by a scheduled workflow that opens an auto-merge PR when upstream release tags move.
+are refreshed by a scheduled workflow that validates and commits upstream release-tag changes to
+`main`; that push starts CI and publishes the changed mirrors.
 Fully versioned application tags are immutable once published; subsequent rebuilds only move
 `latest` and commit-derived tags.
 Build images are also rebuilt on a nightly schedule so upstream-packaged applications such as
