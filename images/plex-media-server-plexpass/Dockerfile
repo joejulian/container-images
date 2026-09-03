@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/joejulian/oci-arch:latest as build
+FROM registry.gitlab.com/joejulian/oci-arch:latest@sha256:0eb3e363d3dd7bf5cfbc099362b1b5de92f726478c38ce1bc18026d232de768f as build
 LABEL plex-media-server-plexpass package builder
 
 ARG URL=https://aur.archlinux.org/cgit/aur.git/snapshot/plex-media-server-plexpass.tar.gz
@@ -12,7 +12,7 @@ RUN curl -L --no-verbose $URL | tar -C /tmp/build -xzv
 WORKDIR /tmp/build/plex-media-server-plexpass
 RUN makepkg --noconfirm --nocolor --noprogressbar
 
-FROM registry.gitlab.com/joejulian/oci-arch:latest
+FROM registry.gitlab.com/joejulian/oci-arch:latest@sha256:0eb3e363d3dd7bf5cfbc099362b1b5de92f726478c38ce1bc18026d232de768f
 
 # install the package created from the previously run build container
 COPY --from=build /tmp/build/plex-media-server-plexpass/plex-media-server-plexpass*.tar.zst /var/cache/pacman/pkg/
