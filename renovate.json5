@@ -5,7 +5,7 @@
     ":separateMajorReleases",
   ],
   automergeType: "pr",
-  platformAutomerge: true,
+  platformAutomerge: false,
   prHourlyLimit: 0,
   prConcurrentLimit: 0,
   branchConcurrentLimit: 0,
