@@ -26,6 +26,10 @@ while IFS= read -r dir; do
         printf 'Arch image must disable pacman download timeouts: %s\n' "${dockerfile_path}" >&2
         status=1
       fi
+      if grep -Eq 'git clone[[:space:]]+https://aur\.archlinux\.org/' "${dockerfile_path}"; then
+        printf 'AUR clones must use the bounded retry helper: %s\n' "${dockerfile_path}" >&2
+        status=1
+      fi
       ;;
     mirror)
       jq -e '.sourceImage != null and (.tags | length) > 0' "${def}" >/dev/null || status=1

@@ -14,6 +14,8 @@ RUN pacman -Syu --needed --noconfirm --ignore filesystem \
       python-pip \
       sudo
 
+COPY --chmod=0755 retry-git-clone.sh /usr/local/bin/retry-git-clone
+
 # renovate: datasource=git-tags depName=gitlab.com/joejulian/fsyslog versioning=semver
 ARG FSYSLOG_VERSION=v0.4.0
 RUN GO111MODULE=on GOPATH=/go GOBIN=/go/bin go install gitlab.com/joejulian/fsyslog@"${FSYSLOG_VERSION}"
@@ -46,7 +48,7 @@ RUN pacman -S --noconfirm \
       zlib
 RUN pacman -T xxd >/dev/null || pacman -S --noconfirm tinyxxd
 
-RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && git clone https://aur.archlinux.org/sphinx.git && cd sphinx && makepkg -A --noconfirm --skippgpcheck --skipchecksums" && \
+RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && retry-git-clone https://aur.archlinux.org/sphinx.git sphinx && cd sphinx && makepkg -A --noconfirm --skippgpcheck --skipchecksums" && \
     find /build/sphinx -maxdepth 1 -name '*.pkg.tar.*' -exec pacman -U --noconfirm {} +
 RUN pacman -S --noconfirm \
       cmake \
@@ -56,11 +58,11 @@ RUN pacman -S --noconfirm \
       ninja \
       python-gobject \
       vala
-RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && git clone https://aur.archlinux.org/libical3.git && cd libical3 && makepkg -A --noconfirm --skippgpcheck --skipchecksums" && \
+RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && retry-git-clone https://aur.archlinux.org/libical3.git libical3 && cd libical3 && makepkg -A --noconfirm --skippgpcheck --skipchecksums" && \
     find /build/libical3 -maxdepth 1 -name '*.pkg.tar.*' -exec pacman -U --noconfirm {} +
-RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && git clone https://aur.archlinux.org/perl-pod-pom-view-restructured.git && cd perl-pod-pom-view-restructured && makepkg -A --noconfirm --skippgpcheck --skipchecksums" && \
+RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && retry-git-clone https://aur.archlinux.org/perl-pod-pom-view-restructured.git perl-pod-pom-view-restructured && cd perl-pod-pom-view-restructured && makepkg -A --noconfirm --skippgpcheck --skipchecksums" && \
     find /build/perl-pod-pom-view-restructured -maxdepth 1 -name '*.pkg.tar.*' -exec pacman -U --noconfirm {} +
-RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && git clone https://aur.archlinux.org/cyrus-imapd.git && cd cyrus-imapd && makepkg -A --noconfirm --skippgpcheck --skipchecksums --nocheck" && \
+RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && retry-git-clone https://aur.archlinux.org/cyrus-imapd.git cyrus-imapd && cd cyrus-imapd && makepkg -A --noconfirm --skippgpcheck --skipchecksums --nocheck" && \
     find /build/cyrus-imapd -maxdepth 1 -name '*.pkg.tar.*' -exec pacman -U --noconfirm {} +
 
 FROM registry.gitlab.com/joejulian/oci-arch:latest@sha256:0eb3e363d3dd7bf5cfbc099362b1b5de92f726478c38ce1bc18026d232de768f
