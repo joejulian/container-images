@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/joejulian/oci-arch:latest AS build
+FROM registry.gitlab.com/joejulian/oci-arch:latest@sha256:0eb3e363d3dd7bf5cfbc099362b1b5de92f726478c38ce1bc18026d232de768f AS build
 
 RUN sed -i '/^ParallelDownloads =/a DisableDownloadTimeout' /etc/pacman.conf
 
@@ -63,7 +63,7 @@ RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && git clone http
 RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && git clone https://aur.archlinux.org/cyrus-imapd.git && cd cyrus-imapd && makepkg -A --noconfirm --skippgpcheck --skipchecksums --nocheck" && \
     find /build/cyrus-imapd -maxdepth 1 -name '*.pkg.tar.*' -exec pacman -U --noconfirm {} +
 
-FROM registry.gitlab.com/joejulian/oci-arch:latest
+FROM registry.gitlab.com/joejulian/oci-arch:latest@sha256:0eb3e363d3dd7bf5cfbc099362b1b5de92f726478c38ce1bc18026d232de768f
 RUN sed -i '/^ParallelDownloads =/a DisableDownloadTimeout' /etc/pacman.conf
 VOLUME /config
 VOLUME /data

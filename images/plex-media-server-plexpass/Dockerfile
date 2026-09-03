@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/joejulian/oci-arch:latest as build
+FROM registry.gitlab.com/joejulian/oci-arch:latest@sha256:0eb3e363d3dd7bf5cfbc099362b1b5de92f726478c38ce1bc18026d232de768f as build
 LABEL plex-media-server-plexpass package builder
 
 RUN sed -i '/^ParallelDownloads =/a DisableDownloadTimeout' /etc/pacman.conf
@@ -14,7 +14,7 @@ RUN curl -L --no-verbose $URL | tar -C /tmp/build -xzv
 WORKDIR /tmp/build/plex-media-server-plexpass
 RUN makepkg --noconfirm --nocolor --noprogressbar
 
-FROM registry.gitlab.com/joejulian/oci-arch:latest
+FROM registry.gitlab.com/joejulian/oci-arch:latest@sha256:0eb3e363d3dd7bf5cfbc099362b1b5de92f726478c38ce1bc18026d232de768f
 
 RUN sed -i '/^ParallelDownloads =/a DisableDownloadTimeout' /etc/pacman.conf
 
