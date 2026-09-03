@@ -1,9 +1,7 @@
-ARG version=3.12
-ARG tag=${version}-alpine3.21
 # renovate: datasource=github-tags depName=joejulian/unifi-cam-proxy versioning=semver
 ARG UNIFI_CAM_PROXY_REF=v0.3.6
 
-FROM python:${tag} AS builder
+FROM python:3.12-alpine3.21 AS builder
 WORKDIR /app
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 ARG UNIFI_CAM_PROXY_REF
@@ -28,14 +26,10 @@ RUN git clone --depth 1 --branch "${UNIFI_CAM_PROXY_REF}" \
 RUN pip install -r /src/unifi-cam-proxy/requirements.txt --no-build-isolation
 
 
-FROM python:${tag}
+FROM python:3.12-alpine3.21
 WORKDIR /app
 
-ARG version
-
-COPY --from=builder \
-        /usr/local/lib/python${version}/site-packages \
-        /usr/local/lib/python${version}/site-packages
+COPY --from=builder /usr/local/lib/ /usr/local/lib/
 
 RUN apk add --update ffmpeg netcat-openbsd libusb-dev
 
