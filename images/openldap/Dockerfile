@@ -1,5 +1,7 @@
 FROM registry.gitlab.com/joejulian/oci-arch:latest
 
+RUN sed -i '/^ParallelDownloads =/a DisableDownloadTimeout' /etc/pacman.conf
+
 RUN pacman-key --init && pacman-key --populate archlinux && \
     pacman -Syu --noconfirm --disable-sandbox --ignore filesystem \
       archlinux-keyring \

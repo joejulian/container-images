@@ -1,5 +1,7 @@
 FROM registry.gitlab.com/joejulian/oci-arch:latest AS build
 
+RUN sed -i '/^ParallelDownloads =/a DisableDownloadTimeout' /etc/pacman.conf
+
 RUN pacman-key --init && pacman-key --populate archlinux
 
 RUN pacman -Syu --needed --noconfirm --ignore filesystem \
@@ -62,6 +64,7 @@ RUN runuser -u alpm -- bash -lc "export HOME=/tmp && cd /build && git clone http
     find /build/cyrus-imapd -maxdepth 1 -name '*.pkg.tar.*' -exec pacman -U --noconfirm {} +
 
 FROM registry.gitlab.com/joejulian/oci-arch:latest
+RUN sed -i '/^ParallelDownloads =/a DisableDownloadTimeout' /etc/pacman.conf
 VOLUME /config
 VOLUME /data
 COPY --from=build /build/*/*.pkg.tar.* /install/
