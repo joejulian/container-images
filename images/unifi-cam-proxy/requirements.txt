@@ -1,5 +1,5 @@
 aiohttp==3.9.5
-amcrest==1.9.8
+amcrest==1.9.9
 paho-mqtt==2.1.0
 aiomqtt==2.1.0
 backoff==2.2.1
