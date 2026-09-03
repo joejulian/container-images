@@ -17,6 +17,7 @@
       managerFilePatterns: ["/(^|/)images\\/[^/]+\\/Dockerfile$/"],
       matchStrings: [
         "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+) versioning=(?<versioning>[^\\s]+)\\nARG FSYSLOG_VERSION=(?<currentValue>[^\\s]+)",
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+) versioning=(?<versioning>[^\\s]+)\\nARG UNIFI_CAM_PROXY_REF=(?<currentValue>[^\\s]+)",
       ],
     },
   ],
