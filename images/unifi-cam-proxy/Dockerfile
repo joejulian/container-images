@@ -1,9 +1,12 @@
-ARG version=3.11
-ARG tag=${version}-alpine3.17
+ARG version=3.12
+ARG tag=${version}-alpine3.21
+# renovate: datasource=github-tags depName=joejulian/unifi-cam-proxy versioning=semver
+ARG UNIFI_CAM_PROXY_REF=v0.3.6
 
-FROM python:${tag} as builder
+FROM python:${tag} AS builder
 WORKDIR /app
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
+ARG UNIFI_CAM_PROXY_REF
 
 RUN apk add --update \
         cargo \
@@ -19,8 +22,10 @@ RUN apk add --update \
         zlib-dev
 
 RUN pip install -U pip wheel setuptools maturin
-COPY requirements.txt .
-RUN pip install -r requirements.txt --no-build-isolation
+RUN git clone --depth 1 --branch "${UNIFI_CAM_PROXY_REF}" \
+        https://github.com/joejulian/unifi-cam-proxy.git \
+        /src/unifi-cam-proxy
+RUN pip install -r /src/unifi-cam-proxy/requirements.txt --no-build-isolation
 
 
 FROM python:${tag}
@@ -34,10 +39,10 @@ COPY --from=builder \
 
 RUN apk add --update ffmpeg netcat-openbsd libusb-dev
 
-COPY . .
+COPY --from=builder /src/unifi-cam-proxy/ .
 RUN pip install . --no-cache-dir
 
-COPY ./docker/entrypoint.sh /
+COPY --from=builder /src/unifi-cam-proxy/docker/entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["unifi-cam-proxy"]
