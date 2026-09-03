@@ -16,6 +16,11 @@ while IFS= read -r dir; do
   case "${kind}" in
     build)
       jq -e '.context != null and .dockerfile != null and .versionCommand != null' "${def}" >/dev/null || status=1
+      dockerfile_path="$(jq -r '.context + "/" + .dockerfile' "${def}")"
+      if grep -Eq '^FROM[[:space:]].*\$\{' "${dockerfile_path}"; then
+        printf 'variable-composed FROM image is not Renovate-manageable: %s\n' "${dockerfile_path}" >&2
+        status=1
+      fi
       ;;
     mirror)
       jq -e '.sourceImage != null and (.tags | length) > 0' "${def}" >/dev/null || status=1

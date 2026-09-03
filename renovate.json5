@@ -2,13 +2,27 @@
   extends: [
     "config:recommended",
     ":rebaseStalePrs",
+    ":separateMajorReleases",
   ],
+  automergeType: "pr",
+  platformAutomerge: true,
+  prHourlyLimit: 0,
+  prConcurrentLimit: 0,
+  branchConcurrentLimit: 0,
+  rebaseWhen: "behind-base-branch",
   packageRules: [
     {
-      matchDatasources: ["git-tags"],
-      matchDepNames: ["gitlab.com/joejulian/fsyslog"],
+      matchDatasources: ["docker", "github-tags", "git-tags", "pypi"],
+      matchUpdateTypes: ["digest", "pin", "pinDigest", "patch", "minor"],
       automerge: true,
       addLabels: ["dependencies", "automerge"],
+      groupName: "non-major dependencies",
+      groupSlug: "non-major",
+    },
+    {
+      matchManagers: ["dockerfile"],
+      matchDatasources: ["docker"],
+      pinDigests: true,
     },
   ],
   customManagers: [
