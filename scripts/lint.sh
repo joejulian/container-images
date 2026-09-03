@@ -21,6 +21,11 @@ while IFS= read -r dir; do
         printf 'variable-composed FROM image is not Renovate-manageable: %s\n' "${dockerfile_path}" >&2
         status=1
       fi
+      if grep -Eq '^FROM[[:space:]]+registry\.gitlab\.com/joejulian/oci-arch:' "${dockerfile_path}" &&
+        ! grep -q 'DisableDownloadTimeout' "${dockerfile_path}"; then
+        printf 'Arch image must disable pacman download timeouts: %s\n' "${dockerfile_path}" >&2
+        status=1
+      fi
       ;;
     mirror)
       jq -e '.sourceImage != null and (.tags | length) > 0' "${def}" >/dev/null || status=1

@@ -1,6 +1,8 @@
 FROM registry.gitlab.com/joejulian/oci-arch:latest@sha256:0eb3e363d3dd7bf5cfbc099362b1b5de92f726478c38ce1bc18026d232de768f as build
 LABEL plex-media-server-plexpass package builder
 
+RUN sed -i '/^ParallelDownloads =/a DisableDownloadTimeout' /etc/pacman.conf
+
 ARG URL=https://aur.archlinux.org/cgit/aur.git/snapshot/plex-media-server-plexpass.tar.gz
 
 RUN pacman-key --init && pacman-key --populate archlinux
@@ -13,6 +15,8 @@ WORKDIR /tmp/build/plex-media-server-plexpass
 RUN makepkg --noconfirm --nocolor --noprogressbar
 
 FROM registry.gitlab.com/joejulian/oci-arch:latest@sha256:0eb3e363d3dd7bf5cfbc099362b1b5de92f726478c38ce1bc18026d232de768f
+
+RUN sed -i '/^ParallelDownloads =/a DisableDownloadTimeout' /etc/pacman.conf
 
 # install the package created from the previously run build container
 COPY --from=build /tmp/build/plex-media-server-plexpass/plex-media-server-plexpass*.tar.zst /var/cache/pacman/pkg/
