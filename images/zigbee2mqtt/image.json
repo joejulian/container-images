@@ -1,0 +1,15 @@
+{
+  "name": "zigbee2mqtt",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+  ],
+  "sourceImage": "docker.io/koenkk/zigbee2mqtt",
+  "image": "ghcr.io/joejulian/container-images/zigbee2mqtt",
+  "tags": [
+    "2.14.1"
+  ],
+  "latestTag": "latest"
+}
