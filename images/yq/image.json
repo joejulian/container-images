@@ -9,7 +9,7 @@
   "sourceImage": "docker.io/mikefarah/yq",
   "image": "ghcr.io/joejulian/container-images/yq",
   "tags": [
-    "4.45.1"
+    "4.53.6"
   ],
   "latestTag": "latest"
 }
