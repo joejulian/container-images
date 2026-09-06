@@ -9,7 +9,7 @@
   "sourceImage": "ghcr.io/home-assistant/home-assistant",
   "image": "ghcr.io/joejulian/container-images/home-assistant",
   "tags": [
-    "2026.9.0"
+    "2026.9.1"
   ],
   "latestTag": "latest"
 }
