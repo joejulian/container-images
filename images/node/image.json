@@ -1,0 +1,15 @@
+{
+  "name": "node",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+  ],
+  "sourceImage": "docker.io/library/node",
+  "image": "ghcr.io/joejulian/container-images/node",
+  "tags": [
+    "22.23.2"
+  ],
+  "latestTag": "latest"
+}
