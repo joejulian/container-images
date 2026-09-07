@@ -9,7 +9,7 @@
   "sourceImage": "docker.io/library/redis",
   "image": "ghcr.io/joejulian/container-images/redis",
   "tags": [
-    "7.4.9"
+    "8.10.1"
   ],
   "latestTag": "latest"
 }
