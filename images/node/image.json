@@ -9,7 +9,7 @@
   "sourceImage": "docker.io/library/node",
   "image": "ghcr.io/joejulian/container-images/node",
   "tags": [
-    "26.8.1"
+    "26.8.2"
   ],
   "latestTag": "latest"
 }
