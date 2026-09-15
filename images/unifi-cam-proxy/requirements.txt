@@ -13,4 +13,4 @@ websockets==12.0
 xmltodict==0.15.1
 pytapo==3.4.19
 httpx~=0.28.1
-yarl~=1.24.5
+yarl~=1.25.1
