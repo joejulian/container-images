@@ -5,7 +5,7 @@
   "sourceImage": "docker.io/intel/intel-gpu-plugin",
   "image": "ghcr.io/joejulian/container-images/intel-gpu-plugin",
   "tags": [
-    "0.36.0"
+    "0.37.0"
   ],
   "latestTag": "latest"
 }
