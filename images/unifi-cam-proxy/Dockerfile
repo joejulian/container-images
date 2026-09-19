@@ -1,5 +1,5 @@
 # renovate: datasource=github-tags depName=joejulian/unifi-cam-proxy versioning=semver
-ARG UNIFI_CAM_PROXY_REF=v0.3.8
+ARG UNIFI_CAM_PROXY_REF=v0.3.9
 
 FROM python:3.14-alpine3.21@sha256:fd8407cacb1028c803566276ae25eb7c2a00fbaa210a0a5670994f6866e29278 AS builder
 WORKDIR /app
