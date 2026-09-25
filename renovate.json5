@@ -12,6 +12,15 @@
   rebaseWhen: "behind-base-branch",
   packageRules: [
     {
+      // The image installs these dependencies from the tagged source checkout.
+      // Track Python updates in joejulian/unifi-cam-proxy instead.
+      matchFileNames: [
+        "images/unifi-cam-proxy/requirements.txt",
+        "images/unifi-cam-proxy/pyproject.toml",
+      ],
+      enabled: false,
+    },
+    {
       matchDatasources: ["docker", "github-tags", "git-tags", "pypi"],
       matchUpdateTypes: ["digest", "pin", "pinDigest", "patch", "minor"],
       automerge: true,
