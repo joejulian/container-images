@@ -9,7 +9,7 @@
   "sourceImage": "docker.io/koenkk/zigbee2mqtt",
   "image": "ghcr.io/joejulian/container-images/zigbee2mqtt",
   "tags": [
-    "2.14.1"
+    "2.14.2"
   ],
   "latestTag": "latest"
 }
