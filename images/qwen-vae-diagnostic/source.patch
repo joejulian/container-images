@@ -1,0 +1,55 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 134719c..3b4fa48 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -83,0 +84 @@ option(SD_BUILD_EXAMPLES             "sd: build examples" ${SD_STANDALONE})
++option(SD_BUILD_VAE_DIAGNOSTIC       "sd: build isolated Qwen Image 2.1 VAE diagnostic" OFF)
+@@ -354,0 +356,4 @@ endif()
++if (SD_BUILD_VAE_DIAGNOSTIC)
++    add_subdirectory(examples/vae-diagnostic)
++endif()
++
+diff --git a/src/model/vae/vae.hpp b/src/model/vae/vae.hpp
+index 3c66965..9af03f6 100644
+--- a/src/model/vae/vae.hpp
++++ b/src/model/vae/vae.hpp
+@@ -4,0 +5 @@
++#include <functional>
+@@ -168,0 +170,2 @@ public:
++    std::function<void(const sd::Tensor<float>&)> decoded_output_observer;
++
+@@ -379,0 +383,3 @@ public:
++        if (decoded_output_observer) {
++            decoded_output_observer(output);
++        }
+diff --git a/src/pipeline/image.cpp b/src/pipeline/image.cpp
+index d3d25c8..77f6fd8 100644
+--- a/src/pipeline/image.cpp
++++ b/src/pipeline/image.cpp
+@@ -10,0 +11 @@
++#include "reference_image.h"
+@@ -285,22 +286,2 @@ namespace sd::pipeline {
+-                double vae_width;
+-                double vae_height;
+-                if (ref_image_params.resize_vae_to_target) {
+-                    vae_width  = request->width;
+-                    vae_height = request->height;
+-                } else {
+-                    int default_pixels = sd->version == VERSION_QWEN_IMAGE_2_1 ? request->width * request->height : 1024 * 1024;
+-                    int target_pixels  = ref_image_params.vae_input_max_pixels > 0 ? ref_image_params.vae_input_max_pixels : default_pixels;
+-                    int vae_image_size = std::min(target_pixels, request->width * request->height);
+-                    vae_width          = sqrt(vae_image_size * ref_images[i].shape()[0] / ref_images[i].shape()[1]);
+-                    vae_height         = vae_width * ref_images[i].shape()[1] / ref_images[i].shape()[0];
+-                }
+-
+-                int factor = sd_version_is_qwen_image(sd->version) ? 32 : 16;
+-                vae_height = round(vae_height / factor) * factor;
+-                vae_width  = round(vae_width / factor) * factor;
+-
+-                auto resized_ref_img = sd::ops::interpolate(ref_images[i],
+-                                                            {static_cast<int>(vae_width),
+-                                                             static_cast<int>(vae_height),
+-                                                             ref_images[i].shape()[2],
+-                                                             ref_images[i].shape()[3]});
++                auto resized_ref_img = resize_reference_for_vae(ref_images[i], sd->version,
++                                                               request->width, request->height, ref_image_params);
