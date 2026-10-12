@@ -1,0 +1,10 @@
+{
+  "name": "qwen-vae-diagnostic",
+  "type": "build",
+  "basePreference": "ubuntu",
+  "platforms": ["linux/amd64"],
+  "context": "images/qwen-vae-diagnostic",
+  "dockerfile": "Dockerfile",
+  "image": "ghcr.io/joejulian/container-images/qwen-vae-diagnostic",
+  "versionCommand": "/sd.cpp/bin/sd-qwen21-vae-roundtrip --version"
+}
