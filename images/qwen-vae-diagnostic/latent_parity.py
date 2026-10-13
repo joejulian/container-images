@@ -132,10 +132,14 @@ def reference_run(output, tile_ids):
     config = json.loads((ROOT / "vae-config.json").read_text())
     report = dict(diffusers_sha=DIFFUSERS_SHA, config_sha=CONFIG_SHA,
                   torch=torch.__version__, reference_device="cpu", reference_dtype="float32",
+                  cpu_capability=torch.backends.cpu.get_cpu_capability(), threads=torch.get_num_threads(),
                   production_device="Vulkan0", production_precision="unchanged production mix",
                   cgroup=limits(), tile_pixels=[256, 256], production_overlap=0.5,
                   comparison="identical production tiles before blending", tiles=[])
     def record():
+        report["memory_peak_bytes"] = int(Path("/sys/fs/cgroup/memory.peak").read_text())
+        report["memory_events"] = dict(line.split() for line in
+                                       Path("/sys/fs/cgroup/memory.events").read_text().splitlines())
         (output / "comparison.json").write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
     record()
     # Meta construction allocates no randomly initialized parameters. Strict
