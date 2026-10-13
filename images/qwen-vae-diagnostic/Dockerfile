@@ -29,11 +29,28 @@ RUN mkdir -p /diagnostic && \
       cat /build/CMakeCache.txt; \
     } > /diagnostic/build-provenance.txt
 
-FROM serving-runtime
+FROM serving-runtime AS reference-runtime
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends python3-venv git ca-certificates
+RUN python3 -m venv /opt/vae-reference
+# These reference pins are part of the experiment identity; update deliberately.
+ARG TORCH_VERSION=2.9.0+cpu
+ARG DIFFUSERS_REVISION=6256aa7666cedd47443adc8f82da9a10e110b09c
+RUN /opt/vae-reference/bin/pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu "torch==$TORCH_VERSION"
+RUN /opt/vae-reference/bin/pip install --no-cache-dir numpy==2.2.6 safetensors==0.8.0 \
+      "diffusers @ git+https://github.com/huggingface/diffusers.git@$DIFFUSERS_REVISION" && \
+    /opt/vae-reference/bin/pip freeze > /opt/vae-reference/requirements-frozen.txt
+
+FROM reference-runtime
 # Keep the production ggml backend binaries and Mesa libraries unchanged.
 COPY --from=build /build/bin/sd-qwen21-vae-roundtrip /build/bin/libstable-diffusion.so /sd.cpp/bin/
 COPY --from=build /diagnostic/build-provenance.txt /opt/vae-diagnostic/build-provenance.txt
-RUN /sd.cpp/bin/sd-qwen21-vae-roundtrip --self-test
+COPY latent_parity.py test_latent_parity.py vae-config.json /opt/vae-diagnostic/
+RUN /sd.cpp/bin/sd-qwen21-vae-roundtrip --self-test && \
+    cd /opt/vae-diagnostic && /opt/vae-reference/bin/python -m unittest -v test_latent_parity && \
+    cat /opt/vae-reference/requirements-frozen.txt >> build-provenance.txt && \
+    sha256sum latent_parity.py vae-config.json >> build-provenance.txt
+ENV HF_HUB_OFFLINE=1 HF_HUB_DISABLE_TELEMETRY=1 PYTHONUNBUFFERED=1 OMP_NUM_THREADS=4 MKL_NUM_THREADS=4
 WORKDIR /sd.cpp
 ENTRYPOINT []
 CMD ["/sd.cpp/bin/sd-qwen21-vae-roundtrip", "--help"]
