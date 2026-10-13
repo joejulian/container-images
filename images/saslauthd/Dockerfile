@@ -1,4 +1,4 @@
-FROM golang:1.27@sha256:e432b43af23a9328d56a7c499be0476810aa344acbcf65fc7c455d4ff5a40602 AS fsyslog
+FROM golang:1.27@sha256:007a316059246276cb214df93950be77837545dc78007a73e0291a4963d5d3bf AS fsyslog
 ENV GOTOOLCHAIN=auto
 # renovate: datasource=git-tags depName=gitlab.com/joejulian/fsyslog versioning=semver
 ARG FSYSLOG_VERSION=v0.4.0
