@@ -12,7 +12,7 @@ RUN git init && git remote add origin https://github.com/leejet/stable-diffusion
     git submodule update --init --recursive --depth=1
 COPY source.patch /diagnostic/source.patch
 RUN git apply --unidiff-zero --check /diagnostic/source.patch && git apply --unidiff-zero /diagnostic/source.patch
-COPY main.cpp CMakeLists.txt /source/examples/vae-diagnostic/
+COPY main.cpp conditioning.cpp diagnostic_common.h CMakeLists.txt /source/examples/vae-diagnostic/
 COPY reference_image.h /source/src/pipeline/reference_image.h
 RUN cmake -S /source -B /build \
     -DSD_BUILD_EXAMPLES=OFF -DSD_BUILD_VAE_DIAGNOSTIC=ON \
@@ -20,12 +20,13 @@ RUN cmake -S /source -B /build \
     -DSD_BUILD_SHARED_GGML_LIB=ON -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON \
     -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
     -DCMAKE_INSTALL_RPATH='$ORIGIN' && \
-    cmake --build /build --target sd-qwen21-vae-roundtrip --parallel 2
+    cmake --build /build --target sd-qwen21-vae-roundtrip sd-qwen21-conditioning --parallel 2
 RUN mkdir -p /diagnostic && \
     { printf '%s\n' 'runtime_image=ghcr.io/leejet/stable-diffusion.cpp@sha256:cc4162fbb7161827ee7417a518c836e9ea4930c6cfc1b40b961c845a2cae73da'; \
       git rev-parse HEAD; git submodule status --recursive; \
       sha256sum /diagnostic/source.patch examples/vae-diagnostic/main.cpp \
-        examples/vae-diagnostic/CMakeLists.txt src/pipeline/reference_image.h; \
+        examples/vae-diagnostic/CMakeLists.txt examples/vae-diagnostic/conditioning.cpp \
+        examples/vae-diagnostic/diagnostic_common.h src/pipeline/reference_image.h; \
       cat /build/CMakeCache.txt; \
     } > /diagnostic/build-provenance.txt
 
@@ -43,13 +44,13 @@ RUN /opt/vae-reference/bin/pip install --no-cache-dir numpy==2.2.6 safetensors==
 
 FROM reference-runtime
 # Keep the production ggml backend binaries and Mesa libraries unchanged.
-COPY --from=build /build/bin/sd-qwen21-vae-roundtrip /build/bin/libstable-diffusion.so /sd.cpp/bin/
+COPY --from=build /build/bin/sd-qwen21-vae-roundtrip /build/bin/sd-qwen21-conditioning /build/bin/libstable-diffusion.so /sd.cpp/bin/
 COPY --from=build /diagnostic/build-provenance.txt /opt/vae-diagnostic/build-provenance.txt
-COPY latent_parity.py test_latent_parity.py vae-config.json /opt/vae-diagnostic/
+COPY latent_parity.py test_latent_parity.py conditioning_ab.py test_conditioning_ab.py vae-config.json /opt/vae-diagnostic/
 RUN /sd.cpp/bin/sd-qwen21-vae-roundtrip --self-test && \
-    cd /opt/vae-diagnostic && /opt/vae-reference/bin/python -m unittest -v test_latent_parity && \
+    cd /opt/vae-diagnostic && /opt/vae-reference/bin/python -m unittest -v test_latent_parity test_conditioning_ab && \
     cat /opt/vae-reference/requirements-frozen.txt >> build-provenance.txt && \
-    sha256sum latent_parity.py vae-config.json >> build-provenance.txt
+    sha256sum latent_parity.py conditioning_ab.py vae-config.json >> build-provenance.txt
 ENV HF_HUB_OFFLINE=1 HF_HUB_DISABLE_TELEMETRY=1 PYTHONUNBUFFERED=1 OMP_NUM_THREADS=4 MKL_NUM_THREADS=4
 WORKDIR /sd.cpp
 ENTRYPOINT []

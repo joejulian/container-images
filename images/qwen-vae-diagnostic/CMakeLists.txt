@@ -1,8 +1,9 @@
-set(TARGET sd-qwen21-vae-roundtrip)
 execute_process(COMMAND git rev-parse HEAD WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
                 OUTPUT_VARIABLE DIAGNOSTIC_UPSTREAM_SHA OUTPUT_STRIP_TRAILING_WHITESPACE
                 COMMAND_ERROR_IS_FATAL ANY)
-add_executable(${TARGET} main.cpp ../common/media_io.cpp ../common/log.cpp)
+add_executable(sd-qwen21-vae-roundtrip main.cpp ../common/media_io.cpp ../common/log.cpp)
+add_executable(sd-qwen21-conditioning conditioning.cpp ../common/media_io.cpp ../common/log.cpp)
+foreach(TARGET sd-qwen21-vae-roundtrip sd-qwen21-conditioning)
 target_include_directories(${TARGET} PRIVATE ${PROJECT_SOURCE_DIR}/examples ${PROJECT_SOURCE_DIR}/src/core)
 target_compile_definitions(${TARGET} PRIVATE DIAGNOSTIC_UPSTREAM_SHA="${DIAGNOSTIC_UPSTREAM_SHA}")
 target_link_libraries(${TARGET} PRIVATE stable-diffusion zip Threads::Threads)
@@ -15,3 +16,4 @@ if(SD_WEBM)
     target_link_libraries(${TARGET} PRIVATE webm)
 endif()
 install(TARGETS ${TARGET} RUNTIME)
+endforeach()
