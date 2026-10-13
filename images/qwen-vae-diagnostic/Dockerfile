@@ -36,8 +36,8 @@ RUN python3 -m venv /opt/vae-reference
 # These reference pins are part of the experiment identity; update deliberately.
 ARG TORCH_VERSION=2.9.0+cpu
 ARG DIFFUSERS_REVISION=6256aa7666cedd47443adc8f82da9a10e110b09c
-RUN /opt/vae-reference/bin/pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu "torch==$TORCH_VERSION" && \
-    /opt/vae-reference/bin/pip install --no-cache-dir numpy==2.2.6 safetensors==0.6.2 \
+RUN /opt/vae-reference/bin/pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu "torch==$TORCH_VERSION"
+RUN /opt/vae-reference/bin/pip install --no-cache-dir numpy==2.2.6 safetensors==0.8.0 \
       "diffusers @ git+https://github.com/huggingface/diffusers.git@$DIFFUSERS_REVISION" && \
     /opt/vae-reference/bin/pip freeze > /opt/vae-reference/requirements-frozen.txt
 
