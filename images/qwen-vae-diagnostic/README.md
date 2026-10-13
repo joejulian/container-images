@@ -1,9 +1,10 @@
 # Qwen Image 2.1 VAE diagnostic
 
-Version 0.2.0 is a standalone round-trip and latent comparison diagnostic built from
+Version 0.3.0 provides separate VAE and conditioning diagnostics built from
 stable-diffusion.cpp `d637cfb935feb2254898a8f1524046c958f3df80` and its pinned
-submodules. It constructs only the production VAE runner; no diffusion,
-text/vision encoder, sampler, or noise generator is constructed.
+submodules. The VAE commands construct only the production VAE runner.
+The conditioning command constructs only text, vision, and projector components.
+Neither constructs a diffusion model, sampler, or noise generator.
 
 The image deliberately derives from the pinned upstream Vulkan runtime instead
 of the usual minimal base: identical Mesa and ggml runtime binaries matter for
@@ -93,3 +94,44 @@ arithmetic precision also differ, so small numerical differences are expected;
 the tool reports measurements rather than an arbitrary parity pass threshold.
 The model-free Python tests validate export layout, comparison statistics,
 invalid-value handling, and strict key/shape adaptation on the meta device.
+
+## Conditioning A/B experiment
+
+```sh
+timeout --signal=TERM --kill-after=10s 600s \
+  /opt/vae-reference/bin/python /opt/vae-diagnostic/conditioning_ab.py \
+  --input /input/original.png --prompt-file /input/edit.txt \
+  --output-dir /results/new-conditioning-comparison
+```
+
+This runs three independent native processes: original, corrected, and an
+original repeat to measure run-to-run variation. The entire sequence shares the
+outer timeout. It uses the production `LLMEmbedder::get_learned_condition`,
+Qwen tokenizer, image preparation, model manager, flash attention, Vulkan
+runtime, and original stored/runtime weight types. Only the existing local
+`/models/Qwen3VL-8B-Instruct-Q4_K_M.gguf` and
+`/models/mmproj-Qwen3VL-8B-Instruct-F16.gguf` are opened as models. No VAE,
+diffusion, sampling, or noise is involved. The same CPU/memory/swap and GPU
+exclusivity requirements apply. It does not update the serving application.
+
+The candidate sets the fourth Qwen3-VL position axis to the final T axis, after
+image-grid positions have been assigned. In the pinned ggml IMROPE kernel this
+axis supplies the two rotary frequency pairs left over from the H/W sections.
+The default diagnostic switch is false, preserving the original computation.
+Const observers capture actual vision inputs, projected output and three
+DeepStack outputs, raw text hidden states before prompt weighting/cropping,
+and final conditioning. Actual token IDs, image-slot tags, and all four position
+axes are exported too. There are no per-layer text checkpoints in this test.
+
+`comparison.json` records file hashes, stage/process timings, cgroup peak memory
+and events, global and text/image-token-group RMSE, relative RMSE, cosine,
+maximum error, and token error quantiles. Inputs and tokenization must match
+exactly. The correction must change only fourth-axis zero to T. Vision outputs
+are compared independently, and the original repeat gives a numerical control.
+Non-finite values fail without sanitization. Exports use the same little-endian
+float32 format as the VAE diagnostic; each process has its own complete log.
+The native CLI is `sd-qwen21-conditioning --input ... --prompt-file ...
+--output-dir ... --position-mode original|corrected`.
+
+This measures the candidate's effect on learned conditioning. It does not prove
+whether that effect causes visible texture corruption; no image is generated.

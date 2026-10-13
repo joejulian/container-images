@@ -58,3 +58,31 @@ index d3d25c8..77f6fd8 100644
 -                                                             ref_images[i].shape()[3]});
 +                auto resized_ref_img = resize_reference_for_vae(ref_images[i], sd->version,
 +                                                               request->width, request->height, ref_image_params);
+diff --git a/src/model/te/llm.hpp b/src/model/te/llm.hpp
+--- a/src/model/te/llm.hpp
++++ b/src/model/te/llm.hpp
+@@ -2046,0 +2047,5 @@
++        // Diagnostic-only controls. Defaults preserve the installed calculation.
++        bool diagnostic_correct_qwen3_positions = false;
++        std::function<void(const sd::Tensor<int32_t>&, const sd::Tensor<float>&)> diagnostic_text_observer;
++        std::function<void(const sd::Tensor<float>&, const std::vector<sd::Tensor<float>>&)> diagnostic_vision_observer;
++
+@@ -2404,0 +2410,5 @@
++            if (diagnostic_correct_qwen3_positions && config.arch == LLMArch::QWEN3_VL) {
++                // IMROPE's remaining frequency pairs read its fourth position axis.
++                std::copy_n(input_pos_vec.begin(), n_tokens, input_pos_vec.begin() + 3 * n_tokens);
++            }
++
+@@ -2488,2 +2498,6 @@
+-            return restore_trailing_singleton_dims(GGMLRunner::compute(get_graph, n_threads, auto_runner_end),
+-                                                   input_ids.dim() + 1);
++            auto result = restore_trailing_singleton_dims(GGMLRunner::compute(get_graph, n_threads, auto_runner_end),
++                                                          input_ids.dim() + 1);
++            if (diagnostic_text_observer) {
++                diagnostic_text_observer(input_ids, result);
++            }
++            return result;
+@@ -2713,0 +2728,3 @@
++            if (diagnostic_vision_observer) {
++                diagnostic_vision_observer(image, outputs);
++            }
