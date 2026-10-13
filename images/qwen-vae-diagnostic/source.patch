@@ -15,10 +15,15 @@ index 3c66965..9af03f6 100644
 +++ b/src/model/vae/vae.hpp
 @@ -4,0 +5 @@
 +#include <functional>
-@@ -168,0 +170,2 @@ public:
+@@ -141,0 +143,3 @@ public:
++            if (!decode_graph && encoded_tile_observer) {
++                encoded_tile_observer(input_tile, output_tile);
++            }
+@@ -168,0 +173,3 @@ public:
++    std::function<void(const sd::Tensor<float>&, const sd::Tensor<float>&)> encoded_tile_observer;
 +    std::function<void(const sd::Tensor<float>&)> decoded_output_observer;
 +
-@@ -379,0 +383,3 @@ public:
+@@ -379,0 +387,3 @@ public:
 +        if (decoded_output_observer) {
 +            decoded_output_observer(output);
 +        }
