@@ -1,0 +1,10 @@
+{
+  "name": "stable-diffusion-qwen",
+  "type": "build",
+  "basePreference": "ubuntu",
+  "platforms": ["linux/amd64"],
+  "context": "images/stable-diffusion-qwen",
+  "dockerfile": "Dockerfile",
+  "image": "ghcr.io/joejulian/container-images/stable-diffusion-qwen",
+  "versionCommand": "cat /opt/sd-patch/VERSION"
+}

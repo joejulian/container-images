@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+printf '[build] stable-diffusion-qwen %s; Qwen3-VL IMROPE temporal-tail correction enabled\n' "$(cat /opt/sd-patch/VERSION)" >&2
+exec /sd.cpp/bin/sd-server "$@"
