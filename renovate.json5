@@ -12,6 +12,12 @@
   rebaseWhen: "behind-base-branch",
   packageRules: [
     {
+      // The patched library must match the server and ggml in this exact runtime.
+      // Advance source, runtime, and downstream VERSION together after validation.
+      matchFileNames: ["images/stable-diffusion-qwen/Dockerfile"],
+      enabled: false,
+    },
+    {
       // The image installs these dependencies from the tagged source checkout.
       // Track Python updates in joejulian/unifi-cam-proxy instead.
       matchFileNames: [

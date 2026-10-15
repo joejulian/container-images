@@ -1,0 +1,14 @@
+--- a/src/model/te/llm.hpp
++++ b/src/model/te/llm.hpp
+@@ -2402,6 +2402,11 @@
+                 }
+             }
+ 
++            // IMROPE's tail frequency pairs use axis four; Qwen3-VL retains T there.
++            if (config.arch == LLMArch::QWEN3_VL) {
++                std::copy_n(input_pos_vec.begin(), n_tokens, input_pos_vec.begin() + 3 * n_tokens);
++            }
++
+             auto input_pos = ggml_new_tensor_1d(compute_ctx,
+                                                 GGML_TYPE_I32,
+                                                 input_pos_vec.size());
