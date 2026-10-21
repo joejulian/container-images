@@ -9,7 +9,7 @@
   "sourceImage": "docker.io/library/traefik",
   "image": "ghcr.io/joejulian/container-images/traefik",
   "tags": [
-    "v3.7.15"
+    "v3.7.16"
   ],
   "latestTag": "latest"
 }
