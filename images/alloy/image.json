@@ -9,7 +9,7 @@
   "sourceImage": "docker.io/grafana/alloy",
   "image": "ghcr.io/joejulian/container-images/alloy",
   "tags": [
-    "v1.21.0"
+    "v1.21.1"
   ],
   "latestTag": "latest"
 }
