@@ -23,7 +23,7 @@ RUN npm --prefix /tests ci
 WORKDIR /frontend
 COPY --from=source /source/examples/server/frontend/ ./
 COPY frontend.patch /patch/frontend.patch
-RUN git apply --check /patch/frontend.patch && git apply /patch/frontend.patch && \
+RUN rm .git && git init && git apply --check /patch/frontend.patch && git apply /patch/frontend.patch && \
     pnpm install --frozen-lockfile && pnpm run type-check && \
     pnpm run build && pnpm run build:header && \
     node /tests/test-draft.mjs /frontend/dist
