@@ -1,6 +1,8 @@
+diff --git a/src/model/te/llm.hpp b/src/model/te/llm.hpp
+index 85f7511..6144768 100644
 --- a/src/model/te/llm.hpp
 +++ b/src/model/te/llm.hpp
-@@ -2402,6 +2402,11 @@
+@@ -2561,6 +2561,11 @@ namespace LLM {
                  }
              }
  
@@ -9,6 +11,6 @@
 +                std::copy_n(input_pos_vec.begin(), n_tokens, input_pos_vec.begin() + 3 * n_tokens);
 +            }
 +
-             auto input_pos = ggml_new_tensor_1d(compute_ctx,
-                                                 GGML_TYPE_I32,
-                                                 input_pos_vec.size());
+             if (!position_ids.empty()) {
+                 GGML_ASSERT(position_ids.numel() == static_cast<int64_t>(input_pos_vec.size()));
+                 input_pos_vec = position_ids.values();

@@ -1,0 +1,341 @@
+diff --git a/src/App.vue b/src/App.vue
+index 265ef3e..5b56004 100644
+--- a/src/App.vue
++++ b/src/App.vue
+@@ -12,6 +12,7 @@ import { availableCacheModes, featuresForMode, supportsEta, supportsFlowShift, u
+ import { IMAGE_INPUTS, VIDEO_IMAGE_INPUTS } from "./lib/image-inputs";
+ import { assignImageEntries, clearImageEntries, filesToImageEntries, removeImageEntry } from "./lib/images";
+ import { createStoredRef, normalizePollIntervalMs } from "./lib/settings";
++import { DraftStore, imageDraft, restoreForm } from "./lib/draft";
+ import { useTheme } from "./lib/theme";
+ import type {
+     Capabilities,
+@@ -58,6 +59,7 @@ const modelStatus = ref<ModelStatus | null>(null);
+ const selectedRecipe = ref<Recipe | null>(null);
+ const applyRecipeDefaultsOnSelect = createStoredRef<boolean>("sdcpp-webui-apply-recipe-defaults", true, (value: unknown) => typeof value === "boolean" ? value : true);
+ const modelSelection = ref<Record<string, string>>({});
++const modelDraft = ref<{ recipeId: string; models: Record<string, string> } | null>(null);
+ const modelReady = computed(() => modelStatus.value ? modelStatus.value.state === "ready" : Boolean(capabilities.value?.model?.name));
+ const currentJob = ref<Job | null>(null);
+ const selectedOutputIndex = ref(0);
+@@ -66,6 +68,30 @@ const statusTone = ref("");
+ const cancelling = ref(false);
+ let pollVersion = 0;
+ const form = reactive<GenerationForm>(createBlankForm());
++const draftReady = ref(false);
++const draftError = ref("");
++let draftStore: DraftStore | null = null;
++let formInitialized = false;
++let restoredJobId = "";
++
++function reportDraftError(error: unknown): void {
++    draftError.value = `Your browser could not save or restore this draft: ${error instanceof Error ? error.message : String(error)}`;
++}
++
++function saveDraft(): void {
++    if (!draftReady.value || !draftStore) return;
++    formInitialized = true;
++    try {
++        draftStore.save({ version: 1, form, tab: activeTab.value, mode: selectedGenerationTab.value,
++            sections: { ...sectionState }, catalog: modelDraft.value, job: currentJob.value ? { id: currentJob.value.id } : restoredJobId ? { id: restoredJobId } : undefined });
++    } catch (error) { reportDraftError(error); }
++}
++
++async function saveImages(): Promise<void> {
++    if (!draftReady.value || !draftStore) return;
++    try { await draftStore.saveImages(form); }
++    catch (error) { reportDraftError(error); }
++}
+ 
+ let pollTimer = 0;
+ let elapsedTimer = 0;
+@@ -282,6 +308,7 @@ function defaultOutputFormatForMode(mode: GenerationMode): string {
+ }
+ 
+ function ensureOutputFormatForMode(mode = generationMode.value): void {
++    if (!capabilities.value) return;
+     const validFormats = mode === "video" ? videoOutputFormats.value : imageOutputFormats.value;
+     if (!validFormats.length) {
+         return;
+@@ -326,12 +353,12 @@ function applyForm(nextForm: GenerationForm): void {
+ 
+ function updateCatalogRecipe(recipe: Recipe | null): void {
+     if (selectedRecipe.value) selectedRecipe.value = recipe;
+-    else if (recipe && (recipe.source === "command_line" || (!modelReady.value && modelStatus.value?.state !== "loading"))) selectRecipe(recipe);
++    else if (recipe && (recipe.source === "command_line" || (!modelReady.value && modelStatus.value?.state !== "loading"))) selectRecipe(recipe, false);
+ }
+ 
+-function selectRecipe(recipe: Recipe): void {
++function selectRecipe(recipe: Recipe, applyDefaults = true): void {
+     selectedRecipe.value = recipe;
+-    if (applyRecipeDefaultsOnSelect.value) {
++    if (applyDefaults && applyRecipeDefaultsOnSelect.value) {
+         if (recipe.source === "command_line" && capabilities.value?.runtime?.origin === "command_line") {
+             const defaults = formFromCapabilities(capabilities.value);
+             for (const key of ["width", "height", "video_frames", "fps", "strength"] as const) form[key] = defaults[key];
+@@ -351,12 +378,13 @@ async function refreshCapabilities(): Promise<void> {
+     capabilitiesError.value = "";
+     try {
+         const response = await getCapabilities(baseUrl.value);
+-        const initializeForm = !capabilities.value;
++        const initializeForm = !formInitialized;
+         const enteringCommandLine = response.runtime?.origin === "command_line" && capabilities.value?.runtime?.origin !== "command_line";
+         capabilities.value = response;
+         if (response.runtime) modelStatus.value = response.runtime;
+         serviceOnline.value = true;
+         if (initializeForm) {
++            formInitialized = true;
+             const defaults = formFromCapabilities(response);
+             defaults.prompt = form.prompt || defaults.prompt;
+             defaults.negative_prompt = form.negative_prompt || defaults.negative_prompt;
+@@ -364,7 +392,7 @@ async function refreshCapabilities(): Promise<void> {
+             if (selectedRecipe.value && applyRecipeDefaultsOnSelect.value) applyRecipeDefaults(form, selectedRecipe.value.defaults);
+         }
+         if (response.runtime?.runtime_recipe && (enteringCommandLine || !selectedRecipe.value)) {
+-            selectRecipe(response.runtime.runtime_recipe);
++            selectRecipe(response.runtime.runtime_recipe, false);
+         }
+         if (selectedGenerationTab.value === "image" && !supportsImageMode.value && supportsVideoMode.value) {
+             selectedGenerationTab.value = "video";
+@@ -522,6 +550,7 @@ async function assignImages(target: ImageTarget, files: FileList): Promise<void>
+         return;
+     }
+     assignImageEntries(form, target, images);
++    await saveImages();
+ }
+ 
+ function clearImage(target: ImageTarget): void {
+@@ -604,12 +633,19 @@ async function onPaste(event: ClipboardEvent): Promise<void> {
+     setMessage("Pasted image into init_image.", "success");
+ }
+ 
+-watch(baseUrl, () => { selectedRecipe.value = null; });
++watch(baseUrl, () => {
++    selectedRecipe.value = null;
++    if (!draftReady.value) return;
++    try { draftStore = new DraftStore(baseUrl.value); saveDraft(); void saveImages(); }
++    catch (error) { reportDraftError(error); }
++});
++watch([form, activeTab, selectedGenerationTab, sectionState, modelDraft, () => currentJob.value?.id], saveDraft, { deep: true, flush: "sync" });
++watch(() => imageDraft(form), () => { void saveImages(); }, { deep: true });
+ 
+-watch(cacheModes, (modes) => { if (!modes.includes(form.cache.mode)) form.cache.mode = "disabled"; });
+-watch(previewModes, (modes) => { if (!modes.includes(form.preview_mode)) form.preview_mode = "none"; });
++watch(cacheModes, (modes) => { if (draftReady.value && !modes.includes(form.cache.mode)) form.cache.mode = "disabled"; });
++watch(previewModes, (modes) => { if (draftReady.value && !modes.includes(form.preview_mode)) form.preview_mode = "none"; });
+ watch(generationFeatures, (features) => {
+-    if (!features.high_noise) form.lora = form.lora.filter((item) => !item.is_high_noise);
++    if (draftReady.value && !features.high_noise) form.lora = form.lora.filter((item) => !item.is_high_noise);
+ });
+ 
+ watch(generationMode, (mode) => {
+@@ -624,9 +660,31 @@ watch(videoOutputFormats, () => {
+     ensureOutputFormatForMode();
+ });
+ 
+-onMounted(() => {
++onMounted(async () => {
++    try {
++        draftStore = new DraftStore(baseUrl.value);
++        const draft = draftStore.read();
++        if (draft) {
++            applyForm(restoreForm(draft.form));
++            if (["image", "video", "settings"].includes(draft.tab)) activeTab.value = draft.tab;
++            if (["image", "video"].includes(draft.mode)) selectedGenerationTab.value = draft.mode;
++            for (const key of Object.keys(sectionState)) {
++                if (typeof draft.sections?.[key] === "boolean") sectionState[key] = draft.sections[key];
++            }
++            modelDraft.value = draft.catalog || null;
++            restoredJobId = typeof draft.job?.id === "string" && /^[A-Za-z0-9_-]+$/.test(draft.job.id) ? draft.job.id : "";
++            formInitialized = true;
++        }
++        await draftStore.restoreImages(form);
++    } catch (error) { reportDraftError(error); }
++    await refreshCapabilities();
++    draftReady.value = true;
++    saveDraft();
+     window.addEventListener("paste", onPaste);
+-    refreshCapabilities();
++    if (restoredJobId) {
++        startElapsedTimer();
++        await pollJob(restoredJobId);
++    }
+ });
+ 
+ onBeforeUnmount(() => {
+@@ -705,9 +763,10 @@ onBeforeUnmount(() => {
+             </div>
+         </header>
+ 
+-        <ModelSelector v-model:apply-defaults="applyRecipeDefaultsOnSelect" :base-url="baseUrl" :busy="isJobRunning" @status="modelStatus = $event" @changed="refreshCapabilities" @recipe="selectRecipe" @selection="modelSelection = $event" @catalog-recipe="updateCatalogRecipe" />
++        <div v-if="draftError" role="alert" class="status-message status-message--error">{{ draftError }}</div>
++        <ModelSelector v-if="draftReady" v-model:apply-defaults="applyRecipeDefaultsOnSelect" :base-url="baseUrl" :saved-selection="modelDraft" @draft="modelDraft = $event" :busy="isJobRunning" @status="modelStatus = $event" @changed="refreshCapabilities" @recipe="selectRecipe" @selection="modelSelection = $event" @catalog-recipe="updateCatalogRecipe" />
+ 
+-        <div v-if="activeTab !== 'settings'" class="layout">
++        <div v-if="draftReady && activeTab !== 'settings'" class="layout">
+             <section class="panel control-panel">
+                 <div class="panel-header">
+                     <div>
+diff --git a/src/components/ModelSelector.vue b/src/components/ModelSelector.vue
+index 85e31b2..c6fae1a 100644
+--- a/src/components/ModelSelector.vue
++++ b/src/components/ModelSelector.vue
+@@ -6,7 +6,7 @@ import { createStoredRef } from "../lib/settings";
+ import { getModelFiles, getModelStatus, getRecipes, loadModel, refreshModels, unloadModel } from "../lib/api";
+ import type { CatalogError, ModelFile, ModelStatus, Recipe } from "../lib/types";
+ 
+-const props = defineProps<{ baseUrl: string; busy: boolean; applyDefaults: boolean }>();
++const props = defineProps<{ baseUrl: string; busy: boolean; applyDefaults: boolean; savedSelection?: { recipeId: string; models: Record<string, string> } | null }>();
+ const emit = defineEmits<{
+     (event: "update:applyDefaults", value: boolean): void;
+     (event: "status", value: ModelStatus): void;
+@@ -14,6 +14,7 @@ const emit = defineEmits<{
+     (event: "recipe", value: Recipe): void;
+     (event: "selection", value: Record<string, string>): void;
+     (event: "catalogRecipe", value: Recipe | null): void;
++    (event: "draft", value: { recipeId: string; models: Record<string, string> }): void;
+ }>();
+ const applyDefaults = computed({
+     get: () => props.applyDefaults,
+@@ -157,6 +158,8 @@ async function poll(): Promise<void> {
+     finally { polling = false; }
+ }
+ 
++watch([selectedId, selection], () => emit("draft", { recipeId: selectedId.value, models: { ...selection.value } }), { deep: true });
++
+ watch(selection, (value) => emit("selection", { ...value }), { deep: true });
+ 
+ watch(() => props.baseUrl, () => {
+@@ -165,8 +168,9 @@ watch(() => props.baseUrl, () => {
+     status.value = null;
+     recipes.value = [];
+     files.value = [];
+-    selectedId.value = "";
+-    selection.value = {};
++    const saved = props.savedSelection;
++    selectedId.value = saved?.recipeId || "";
++    selection.value = { ...saved?.models };
+     working.value = false;
+     window.clearInterval(timer);
+     void refresh(false);
+diff --git a/src/lib/draft.ts b/src/lib/draft.ts
+new file mode 100644
+index 0000000..96939c6
+--- /dev/null
++++ b/src/lib/draft.ts
+@@ -0,0 +1,115 @@
++import { createBlankForm } from "./form-defaults";
++import type { GenerationForm, ImageEntry, ImageTarget } from "./types";
++
++const COOKIE = "sdcpp-webui-draft";
++const IMAGE_KEYS: ImageTarget[] = ["init_image", "end_image", "mask_image", "control_image", "ip_adapter_image", "ref_images", "control_frames"];
++
++export interface Draft {
++    version: 1;
++    form: Partial<GenerationForm>;
++    tab: "image" | "video" | "settings";
++    mode: "image" | "video";
++    sections: Record<string, boolean>;
++    job?: { id: string };
++    catalog?: { recipeId: string; models: Record<string, string> } | null;
++}
++
++// Copy only fields known to this build, retaining new defaults after upgrades.
++function mergeKnown(defaults: any, saved: any): any {
++    if (Array.isArray(defaults)) return Array.isArray(saved) ? saved : defaults;
++    if (defaults !== null && typeof defaults === "object") {
++        return Object.fromEntries(Object.entries(defaults).map(([key, value]) => [key, mergeKnown(value, saved?.[key])]));
++    }
++    if (typeof saved === typeof defaults || ((typeof defaults === "number" && saved === "") || (defaults === "" && typeof saved === "number" && Number.isFinite(saved)))) return saved;
++    return defaults;
++}
++
++export function restoreForm(saved: Partial<GenerationForm>): GenerationForm {
++    const form = mergeKnown(createBlankForm(), saved) as GenerationForm;
++    for (const key of IMAGE_KEYS) (form as any)[key] = key === "ref_images" || key === "control_frames" ? [] : null;
++    return form;
++}
++
++function validImage(value: unknown): value is ImageEntry {
++    const image = value as ImageEntry;
++    return Boolean(image && typeof image.name === "string" && typeof image.type === "string" &&
++        typeof image.dataUrl === "string" && image.dataUrl.startsWith("data:image/"));
++}
++
++export class DraftStore {
++    private key: string;
++    private database?: Promise<IDBDatabase>;
++    private writes: Promise<void> = Promise.resolve();
++
++    constructor(baseUrl: string) {
++        let id = document.cookie.split("; ").find((item) => item.startsWith(`${COOKIE}=`))?.slice(COOKIE.length + 1);
++        if (!id || !/^[a-f0-9]{32}$/.test(id)) {
++            id = Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => byte.toString(16).padStart(2, "0")).join("");
++        }
++        document.cookie = `${COOKIE}=${id}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
++        if (!document.cookie.includes(`${COOKIE}=${id}`)) throw new Error("Cookies are blocked.");
++        this.key = `sdcpp-webui-draft-v1:${id}:${location.pathname}:${baseUrl.trim()}`;
++    }
++
++    read(): Draft | null {
++        const saved = localStorage.getItem(this.key);
++        if (!saved) return null;
++        const draft = JSON.parse(saved);
++        if (draft?.version !== 1 || !draft.form || typeof draft.form !== "object") throw new Error("Saved draft has an unsupported format.");
++        return draft;
++    }
++
++    save(draft: Draft): void {
++        const form = { ...draft.form };
++        for (const key of IMAGE_KEYS) delete form[key];
++        // Synchronous writes preserve the last keystroke even on immediate reload.
++        localStorage.setItem(this.key, JSON.stringify({ ...draft, form }));
++    }
++
++    private open(): Promise<IDBDatabase> {
++        if (!this.database) this.database = new Promise((resolve, reject) => {
++            const request = indexedDB.open("sdcpp-webui-drafts", 1);
++            request.onupgradeneeded = () => request.result.createObjectStore("images");
++            request.onsuccess = () => resolve(request.result);
++            request.onerror = () => reject(request.error);
++            request.onblocked = () => reject(new Error("Image draft storage is blocked by another tab."));
++        });
++        return this.database;
++    }
++
++    async restoreImages(form: GenerationForm): Promise<void> {
++        const db = await this.open();
++        const images: any = await new Promise((resolve, reject) => {
++            const request = db.transaction("images").objectStore("images").get(this.key);
++            request.onsuccess = () => resolve(request.result);
++            request.onerror = () => reject(request.error);
++        });
++        if (!images) return;
++        for (const key of IMAGE_KEYS) {
++            const value = images[key];
++            (form as any)[key] = key === "ref_images" || key === "control_frames"
++                ? (Array.isArray(value) ? value.filter(validImage) : [])
++                : validImage(value) ? value : null;
++        }
++    }
++
++    saveImages(form: GenerationForm): Promise<void> {
++        const images = JSON.parse(JSON.stringify(Object.fromEntries(IMAGE_KEYS.map((key) => [key, form[key]]))));
++        const next = this.writes.catch(() => {}).then(async () => {
++            const db = await this.open();
++            await new Promise<void>((resolve, reject) => {
++                const transaction = db.transaction("images", "readwrite");
++                transaction.objectStore("images").put(images, this.key);
++                transaction.oncomplete = () => resolve();
++                transaction.onabort = () => reject(transaction.error || new Error("Image draft write aborted."));
++                transaction.onerror = () => reject(transaction.error);
++            });
++        });
++        this.writes = next;
++        return next;
++    }
++}
++
++export function imageDraft(form: GenerationForm): unknown[] {
++    return IMAGE_KEYS.map((key) => form[key]);
++}
