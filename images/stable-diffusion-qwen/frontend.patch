@@ -220,7 +220,7 @@ index 85e31b2..c6fae1a 100644
      void refresh(false);
 diff --git a/src/lib/draft.ts b/src/lib/draft.ts
 new file mode 100644
-index 0000000..96939c6
+index 0000000..b3a5f18
 --- /dev/null
 +++ b/src/lib/draft.ts
 @@ -0,0 +1,115 @@
@@ -259,7 +259,7 @@ index 0000000..96939c6
 +function validImage(value: unknown): value is ImageEntry {
 +    const image = value as ImageEntry;
 +    return Boolean(image && typeof image.name === "string" && typeof image.type === "string" &&
-+        typeof image.dataUrl === "string" && image.dataUrl.startsWith("data:image/"));
++        typeof image.dataUrl === "string" && image.dataUrl.startsWith("data:"));
 +}
 +
 +export class DraftStore {
@@ -268,7 +268,7 @@ index 0000000..96939c6
 +    private writes: Promise<void> = Promise.resolve();
 +
 +    constructor(baseUrl: string) {
-+        let id = document.cookie.split("; ").find((item) => item.startsWith(`${COOKIE}=`))?.slice(COOKIE.length + 1);
++        let id = document.cookie.split(/;\s*/).find((item) => item.startsWith(`${COOKIE}=`))?.slice(COOKIE.length + 1);
 +        if (!id || !/^[a-f0-9]{32}$/.test(id)) {
 +            id = Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => byte.toString(16).padStart(2, "0")).join("");
 +        }
