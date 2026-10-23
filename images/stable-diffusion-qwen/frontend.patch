@@ -46,25 +46,25 @@ index 265ef3e..5b56004 100644
 +    try { await draftStore.saveImages(form); }
 +    catch (error) { reportDraftError(error); }
 +}
- 
+
  let pollTimer = 0;
  let elapsedTimer = 0;
 @@ -282,6 +308,7 @@ function defaultOutputFormatForMode(mode: GenerationMode): string {
  }
- 
+
  function ensureOutputFormatForMode(mode = generationMode.value): void {
 +    if (!capabilities.value) return;
      const validFormats = mode === "video" ? videoOutputFormats.value : imageOutputFormats.value;
      if (!validFormats.length) {
          return;
 @@ -326,12 +353,12 @@ function applyForm(nextForm: GenerationForm): void {
- 
+
  function updateCatalogRecipe(recipe: Recipe | null): void {
      if (selectedRecipe.value) selectedRecipe.value = recipe;
 -    else if (recipe && (recipe.source === "command_line" || (!modelReady.value && modelStatus.value?.state !== "loading"))) selectRecipe(recipe);
 +    else if (recipe && (recipe.source === "command_line" || (!modelReady.value && modelStatus.value?.state !== "loading"))) selectRecipe(recipe, false);
  }
- 
+
 -function selectRecipe(recipe: Recipe): void {
 +function selectRecipe(recipe: Recipe, applyDefaults = true): void {
      selectedRecipe.value = recipe;
@@ -103,12 +103,12 @@ index 265ef3e..5b56004 100644
      assignImageEntries(form, target, images);
 +    await saveImages();
  }
- 
+
  function clearImage(target: ImageTarget): void {
 @@ -604,12 +633,19 @@ async function onPaste(event: ClipboardEvent): Promise<void> {
      setMessage("Pasted image into init_image.", "success");
  }
- 
+
 -watch(baseUrl, () => { selectedRecipe.value = null; });
 +watch(baseUrl, () => {
 +    selectedRecipe.value = null;
@@ -118,7 +118,7 @@ index 265ef3e..5b56004 100644
 +});
 +watch([form, activeTab, selectedGenerationTab, sectionState, modelDraft, () => currentJob.value?.id], saveDraft, { deep: true, flush: "sync" });
 +watch(() => imageDraft(form), () => { void saveImages(); }, { deep: true });
- 
+
 -watch(cacheModes, (modes) => { if (!modes.includes(form.cache.mode)) form.cache.mode = "disabled"; });
 -watch(previewModes, (modes) => { if (!modes.includes(form.preview_mode)) form.preview_mode = "none"; });
 +watch(cacheModes, (modes) => { if (draftReady.value && !modes.includes(form.cache.mode)) form.cache.mode = "disabled"; });
@@ -127,12 +127,12 @@ index 265ef3e..5b56004 100644
 -    if (!features.high_noise) form.lora = form.lora.filter((item) => !item.is_high_noise);
 +    if (draftReady.value && !features.high_noise) form.lora = form.lora.filter((item) => !item.is_high_noise);
  });
- 
+
  watch(generationMode, (mode) => {
 @@ -624,9 +660,31 @@ watch(videoOutputFormats, () => {
      ensureOutputFormatForMode();
  });
- 
+
 -onMounted(() => {
 +onMounted(async () => {
 +    try {
@@ -161,16 +161,16 @@ index 265ef3e..5b56004 100644
 +        await pollJob(restoredJobId);
 +    }
  });
- 
+
  onBeforeUnmount(() => {
 @@ -705,9 +763,10 @@ onBeforeUnmount(() => {
              </div>
          </header>
- 
+
 -        <ModelSelector v-model:apply-defaults="applyRecipeDefaultsOnSelect" :base-url="baseUrl" :busy="isJobRunning" @status="modelStatus = $event" @changed="refreshCapabilities" @recipe="selectRecipe" @selection="modelSelection = $event" @catalog-recipe="updateCatalogRecipe" />
 +        <div v-if="draftError" role="alert" class="status-message status-message--error">{{ draftError }}</div>
 +        <ModelSelector v-if="draftReady" v-model:apply-defaults="applyRecipeDefaultsOnSelect" :base-url="baseUrl" :saved-selection="modelDraft" @draft="modelDraft = $event" :busy="isJobRunning" @status="modelStatus = $event" @changed="refreshCapabilities" @recipe="selectRecipe" @selection="modelSelection = $event" @catalog-recipe="updateCatalogRecipe" />
- 
+
 -        <div v-if="activeTab !== 'settings'" class="layout">
 +        <div v-if="draftReady && activeTab !== 'settings'" class="layout">
              <section class="panel control-panel">
@@ -183,7 +183,7 @@ index 85e31b2..c6fae1a 100644
 @@ -6,7 +6,7 @@ import { createStoredRef } from "../lib/settings";
  import { getModelFiles, getModelStatus, getRecipes, loadModel, refreshModels, unloadModel } from "../lib/api";
  import type { CatalogError, ModelFile, ModelStatus, Recipe } from "../lib/types";
- 
+
 -const props = defineProps<{ baseUrl: string; busy: boolean; applyDefaults: boolean }>();
 +const props = defineProps<{ baseUrl: string; busy: boolean; applyDefaults: boolean; savedSelection?: { recipeId: string; models: Record<string, string> } | null }>();
  const emit = defineEmits<{
@@ -200,11 +200,11 @@ index 85e31b2..c6fae1a 100644
 @@ -157,6 +158,8 @@ async function poll(): Promise<void> {
      finally { polling = false; }
  }
- 
+
 +watch([selectedId, selection], () => emit("draft", { recipeId: selectedId.value, models: { ...selection.value } }), { deep: true });
 +
  watch(selection, (value) => emit("selection", { ...value }), { deep: true });
- 
+
  watch(() => props.baseUrl, () => {
 @@ -165,8 +168,9 @@ watch(() => props.baseUrl, () => {
      status.value = null;
