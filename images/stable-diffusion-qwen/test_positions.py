@@ -22,12 +22,25 @@ def main():
 #include <cstdlib>
 #include <vector>
 #define GGML_ASSERT(x) do { if (!(x)) std::abort(); } while (0)
-enum class LLMArch { MISTRAL_SMALL_3_2, MINISTRAL_3_3B, QWEN3, GEMMA3_12B,
+enum class LLMArch { MISTRAL_SMALL_3_2, MINISTRAL_3_3B, QWEN3, QWEN3_5, GEMMA3_12B,
     GEMMA4_12B, GEMMA2_2B, GPT_OSS_20B, LLADA2_MOE, QWEN3_VL, QWEN2_5_VL };
 struct Grid { int index, size, grid_h, grid_w; };
-std::vector<int> positions(LLMArch arch, int count, const std::vector<Grid>& image_grids) {
+std::vector<int> positions(LLMArch arch, int count, const std::vector<Grid>& image_grids, bool custom = false) {
     struct { LLMArch arch; struct { int spatial_merge_size; } vision; } config{arch, {2}};
-    struct Tensor { int64_t ne[1]; } tensor{{count}};
+    struct Tensor { int64_t ne[2]; } tensor{{count, 0}};
+    std::vector<Tensor> embeds(image_grids.size());
+    std::vector<std::pair<int, Tensor*>> image_embeds;
+    for (size_t i=0; i<image_grids.size(); ++i) {
+        embeds[i].ne[1] = image_grids[i].size;
+        tensor.ne[0] -= image_grids[i].size - 1;
+        image_embeds.emplace_back(0, &embeds[i]);
+    }
+    struct Positions {
+        std::vector<int> data;
+        bool empty() const { return data.empty(); }
+        int64_t numel() const { return data.size(); }
+        std::vector<int> values() const { return data; }
+    } position_ids{custom ? std::vector<int>(4*count, 123) : std::vector<int>()};
     auto input_ids = &tensor;
     std::vector<int> input_pos_vec;
     /* PRODUCTION_BLOCK */
@@ -68,6 +81,8 @@ int main() {
     auto single = positions(LLMArch::QWEN3, 9, {});
     check(single.size() == 9, "Qwen3 one-axis path changed");
     for (int i=0; i<9; ++i) check(single[i] == i, "Qwen3 position changed");
+    auto custom = positions(LLMArch::QWEN3_VL, 9, {}, true);
+    for (int v : custom) check(v == 123, "explicit position IDs must be preserved");
     return mismatches ? 1 : 0;
 }
 '''.replace("/* PRODUCTION_BLOCK */", block)
@@ -84,7 +99,7 @@ int main() {
             print(f"Original reproduces {len(errors)} temporal-tail mismatches; other checks pass")
         else:
             assert result.returncode == 0, result.stderr
-            print("Patched production block passes all six position fixtures")
+            print("Patched production block passes all seven position fixtures (including expanded image tokens and explicit IDs)")
 
 
 if __name__ == "__main__":
