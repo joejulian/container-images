@@ -1,4 +1,4 @@
-FROM ghcr.io/leejet/stable-diffusion.cpp:master-vulkan@sha256:0b496044f2f9970c41042180f87163d216f24c744347c3781e35276d4b581307 AS serving-runtime
+FROM ghcr.io/leejet/stable-diffusion.cpp:master-vulkan@sha256:d40ca41961fe00d2b241da5eb42d8aa76ee4bc08e76b8921f4aecf1a44679234 AS serving-runtime
 
 FROM serving-runtime AS build
 USER root
