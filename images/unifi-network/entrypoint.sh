@@ -5,7 +5,7 @@ if [ "$#" -gt 0 ]; then
     exec "$@"
 fi
 
-mkdir -p /unifi/data /unifi/log /unifi/run/work/ROOT
+mkdir -p /unifi/data /unifi/logs /unifi/run/work/ROOT
 properties=/unifi/data/system.properties
 touch "$properties"
 # Keep the existing controller configuration, but make database ownership
@@ -21,7 +21,7 @@ awk '!/^(db\.mongo\.local|db\.mongo\.uri|statdb\.mongo\.uri|unifi\.db\.name)=/' 
 mv "$properties.next" "$properties"
 
 exec java "-Xmx${JVM_MAX_HEAP_SIZE:-1024M}" \
-    -Dunifi.datadir=/unifi/data -Dunifi.logdir=/unifi/log \
+    -Dunifi.datadir=/unifi/data -Dunifi.logdir=/unifi/logs \
     -Dunifi.rundir=/unifi/run -Djava.io.tmpdir=/tmp \
     -Djava.awt.headless=true -Dfile.encoding=UTF-8 \
     -Dlog4j2.formatMsgNoLookups=true \
