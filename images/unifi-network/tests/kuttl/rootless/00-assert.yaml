@@ -3,6 +3,4 @@ kind: Pod
 metadata:
   name: controller
 status:
-  conditions:
-    - type: Ready
-      status: "True"
+  phase: Running
