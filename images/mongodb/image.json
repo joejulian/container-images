@@ -1,0 +1,16 @@
+{
+  "name": "mongodb",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+  ],
+  "sourceImage": "docker.io/library/mongo",
+  "image": "ghcr.io/joejulian/container-images/mongodb",
+  "tags": [
+    "8.0.34"
+  ],
+  "latestTag": "latest",
+  "versionPattern": "^8\\.0\\.[0-9]+$"
+}
