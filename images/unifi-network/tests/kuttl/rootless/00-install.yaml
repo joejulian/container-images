@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: controller
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    runAsGroup: 999
+    fsGroup: 999
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: application
+      image: local/unifi-network:ci
+      imagePullPolicy: Never
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+      readinessProbe:
+        httpGet:
+          scheme: HTTPS
+          path: /status
+          port: 8443
+        periodSeconds: 5
+      volumeMounts:
+        - name: controller
+          mountPath: /unifi
+    - name: database
+      image: docker.io/library/mongo:8.0.34
+      command: [mongod]
+      args: [--bind_ip, "127.0.0.1", --port, "27117", --dbpath, /data/db]
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+      volumeMounts:
+        - name: database
+          mountPath: /data/db
+  volumes:
+    - name: controller
+      emptyDir: {}
+    - name: database
+      emptyDir: {}
