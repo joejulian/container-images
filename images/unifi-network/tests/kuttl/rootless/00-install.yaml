@@ -20,10 +20,11 @@ spec:
         capabilities:
           drop: [ALL]
       readinessProbe:
-        httpGet:
-          scheme: HTTPS
-          path: /status
-          port: 8443
+        exec:
+          command:
+            - sh
+            - -ec
+            - 'curl -fkSs --max-time 5 https://127.0.0.1:8443/status | grep -q ''"up":true'''
         periodSeconds: 5
       volumeMounts:
         - name: controller
