@@ -38,5 +38,6 @@ while IFS= read -r dir; do
 done < <(./scripts/list-images.sh)
 
 ./scripts/test-publish-common.sh || status=1
+bash ./scripts/test-mirror-version-pattern.sh || status=1
 
 exit "${status}"
