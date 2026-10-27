@@ -8,5 +8,5 @@ if [[ ! -d "${tests_dir}" ]]; then
   exit 0
 fi
 
-kubectl kuttl test "${tests_dir}" --timeout 120 --report-format json
+kubectl kuttl test "${tests_dir}" --timeout 120 --report json
 
