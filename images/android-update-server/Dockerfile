@@ -1,4 +1,4 @@
-FROM python:3.15-alpine@sha256:1b0796bb3b4390ceb717d9231fa2c4ee584948473724ad7ae252aa9bc2125c7e AS build
+FROM python:3.15-alpine@sha256:0aa144e9ec2ae8fd80dfd94070ef3e432a0df17b6e5e0091dc05323974ce9913 AS build
 
 WORKDIR /src
 
@@ -9,7 +9,7 @@ COPY tests ./tests
 RUN PYTHONPATH=/src/src python -m unittest discover -s tests -v \
     && python -m pip wheel --no-deps --wheel-dir /wheels .
 
-FROM python:3.15-alpine@sha256:1b0796bb3b4390ceb717d9231fa2c4ee584948473724ad7ae252aa9bc2125c7e
+FROM python:3.15-alpine@sha256:0aa144e9ec2ae8fd80dfd94070ef3e432a0df17b6e5e0091dc05323974ce9913
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
