@@ -8,7 +8,7 @@ on:
 
 jobs:
   matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       count: ${{ steps.matrix.outputs.count }}
@@ -39,7 +39,7 @@ jobs:
           printf 'count=%s\n' "$(jq '.include | length' <<< "${matrix_json}")" >> "${GITHUB_OUTPUT}"
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
         with:
@@ -48,7 +48,7 @@ jobs:
       - run: ./scripts/lint.sh
 
   validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: needs.matrix.outputs.count != '0'
     needs:
       - matrix
@@ -87,7 +87,8 @@ jobs:
           done
 
   kuttl:
-    runs-on: ubuntu-latest
+    # MongoDB 8 rejects the 6.19 kernel on some 24.04 runner revisions.
+    runs-on: ${{ matrix.name == 'unifi-network' && 'ubuntu-22.04' || 'ubuntu-24.04' }}
     if: needs.matrix.outputs.count != '0'
     needs:
       - matrix
