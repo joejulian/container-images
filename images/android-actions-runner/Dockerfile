@@ -1,4 +1,4 @@
-FROM ghcr.io/joejulian/container-images/node:24.22.1@sha256:c804d2fc9b810eadd1c65a43bc7f486e5258b2d52e64d4d2a3e69592fefb9621 AS node
+FROM ghcr.io/joejulian/container-images/node:26.12.1@sha256:33d001c867e40433d6f5fea81e404290601cc498361732f9696178cf7244a370 AS node
 
 FROM ghcr.io/joejulian/container-images/android-build-box:1.29.0@sha256:bbec11c209707eeb081ac3356494dfc46489550061c9a9f8daae06a6dad3b53b
 
@@ -34,7 +34,9 @@ COPY tests/signing_fixture.py /var/tmp/runner-signing-fixture.py
 RUN python3 /var/tmp/runner-signing-fixture.py \
     && rm /var/tmp/runner-signing-fixture.py
 
-RUN test "$(node --version | cut -d. -f1)" = v24 \
+RUN node_version="$(sed -n 's#^FROM .*/node:\([^@]*\)@.*#\1#p' /usr/local/share/android-actions-runner.Dockerfile)" \
+    && test -n "$node_version" \
+    && test "$(node --version)" = "v${node_version}" \
     && npm --version \
     && test -x /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager \
     && test -f /opt/android-sdk/platforms/android-35/android.jar \
