@@ -2,6 +2,9 @@ FROM ghcr.io/joejulian/container-images/node:24.22.1@sha256:c804d2fc9b810eadd1c6
 
 FROM ghcr.io/joejulian/container-images/android-build-box:1.29.0@sha256:bbec11c209707eeb081ac3356494dfc46489550061c9a9f8daae06a6dad3b53b
 
+# renovate: datasource=custom.android-build-tools depName=android-build-tools versioning=semver
+ARG ANDROID_BUILD_TOOLS_VERSION=37.0.0
+
 # Keep Node and npm together and ahead of the upstream distro's older Node.
 COPY --from=node /usr/local/ /opt/actions-node/
 ENV PATH="/opt/actions-node/bin:${PATH}"
@@ -26,6 +29,11 @@ RUN curl --fail --silent --show-error --location --max-time 30 --retry 2 \
     && rm /var/tmp/actions-yarn-key.asc \
     && apt-get -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o Acquire::Retries=2 update -qq
 
+RUN printf 'y\n' | timeout 600 /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}"
+COPY tests/signing_fixture.py /var/tmp/runner-signing-fixture.py
+RUN python3 /var/tmp/runner-signing-fixture.py \
+    && rm /var/tmp/runner-signing-fixture.py
+
 RUN test "$(node --version | cut -d. -f1)" = v24 \
     && npm --version \
     && test -x /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager \
@@ -33,5 +41,5 @@ RUN test "$(node --version | cut -d. -f1)" = v24 \
     && test -d /opt/android-sdk/ndk/latest \
     && base_version="$(sed -n 's#^FROM .*/android-build-box:\([^@]*\)@.*#\1#p' /usr/local/share/android-actions-runner.Dockerfile)" \
     && test -n "$base_version" \
-    && printf '%s-node%s\n' "$base_version" "$(node --version | cut -c2-)" \
+    && printf '%s-node%s.buildtools.%s\n' "$base_version" "$(node --version | cut -c2-)" "${ANDROID_BUILD_TOOLS_VERSION}" \
        > /usr/local/share/android-actions-runner-version
