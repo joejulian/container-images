@@ -1,0 +1,14 @@
+{
+  "name": "minecraft-server",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+  ],
+  "sourceImage": "docker.io/itzg/minecraft-server",
+  "image": "ghcr.io/joejulian/container-images/minecraft-server",
+  "tags": [
+    "2026.10.1"
+  ]
+}

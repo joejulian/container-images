@@ -1,0 +1,13 @@
+{
+  "name": "android-build-box",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "platforms": [
+    "linux/amd64"
+  ],
+  "sourceImage": "docker.io/mingc/android-build-box",
+  "image": "ghcr.io/joejulian/container-images/android-build-box",
+  "tags": [
+    "1.29.0"
+  ]
+}
