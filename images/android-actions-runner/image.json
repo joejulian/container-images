@@ -1,0 +1,13 @@
+{
+  "name": "android-actions-runner",
+  "type": "build",
+  "basePreference": "mirror",
+  "platforms": [
+    "linux/amd64"
+  ],
+  "context": "images/android-actions-runner",
+  "dockerfile": "Dockerfile",
+  "image": "ghcr.io/joejulian/container-images/android-actions-runner",
+  "latestTag": "latest",
+  "versionCommand": "node --version >/dev/null && cat /usr/local/share/android-actions-runner-version"
+}
