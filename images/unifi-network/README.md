@@ -17,3 +17,13 @@ Secret-backed environment variables. `JVM_MAX_HEAP_SIZE` defaults to 1024M.
 Migrate legacy MongoDB through a tested logical restore into fresh storage;
 never open an older WiredTiger database directly with a new major version.
 The MongoDB mirror's version pattern retains the supported 8.0 release line.
+
+## Runtime qualification
+
+MongoDB 8 cannot run on Linux kernels 6.19 through 7.0.13 because of its
+allocator's rseq incompatibility. The UniFi Kubernetes test and publishing jobs
+therefore select the supported Ubuntu 22.04 runner with its 6.8 kernel. Hosts
+running 7.0.14 or later are also supported by the MongoDB kernel check. Qualify
+runner kernel changes before advancing that test environment; do not bypass
+MongoDB's startup guard. See the MongoDB production notes for the current
+compatibility range.

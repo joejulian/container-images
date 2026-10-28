@@ -8,7 +8,7 @@ on:
 
 jobs:
   matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       count: ${{ steps.matrix.outputs.count }}
@@ -39,7 +39,7 @@ jobs:
           printf 'count=%s\n' "$(jq '.include | length' <<< "${matrix_json}")" >> "${GITHUB_OUTPUT}"
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
         with:
@@ -48,7 +48,7 @@ jobs:
       - run: ./scripts/lint.sh
 
   validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: needs.matrix.outputs.count != '0'
     needs:
       - matrix
@@ -63,11 +63,15 @@ jobs:
       - name: Validate build image
         if: matrix.type == 'build'
         run: ./scripts/build-local.sh "${{ matrix.dir }}"
+      - uses: actions/setup-go@v6
+        if: matrix.type == 'mirror'
+        with:
+          # renovate: datasource=golang-version depName=go
+          go-version: '1.27.2'
+          cache: false
       - name: Validate mirror source
         if: matrix.type == 'mirror'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y golang-go
           go install github.com/google/go-containerregistry/cmd/crane@latest
           export PATH="${PATH}:${HOME}/go/bin"
           while IFS= read -r tag; do
@@ -87,7 +91,8 @@ jobs:
           done
 
   kuttl:
-    runs-on: ubuntu-latest
+    # MongoDB 8 rejects the 6.19 kernel on some 24.04 runner revisions.
+    runs-on: ${{ matrix.name == 'unifi-network' && 'ubuntu-22.04' || 'ubuntu-24.04' }}
     if: needs.matrix.outputs.count != '0'
     needs:
       - matrix
@@ -113,13 +118,18 @@ jobs:
       - name: Build local image for tests
         if: steps.has-tests.outputs.present == 'true' && matrix.type == 'build'
         run: ./scripts/build-local.sh "${{ matrix.dir }}"
+      - uses: actions/setup-go@v6
+        if: steps.has-tests.outputs.present == 'true'
+        with:
+          # renovate: datasource=golang-version depName=go
+          go-version: '1.27.2'
+          cache: false
       - name: Install KUTTL toolchain
         if: steps.has-tests.outputs.present == 'true'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y golang-go
           go install sigs.k8s.io/kind@v0.29.0
-          go install github.com/kudobuilder/kuttl/cmd/kubectl-kuttl@latest
+          # renovate: datasource=github-tags depName=kudobuilder/kuttl
+          go install github.com/kudobuilder/kuttl/cmd/kubectl-kuttl@v0.28.0
           export PATH="${PATH}:${HOME}/go/bin"
           kind create cluster --wait 120s
       - name: Load image into kind
