@@ -1,0 +1,14 @@
+{
+  "name": "transmission-openvpn",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+  ],
+  "sourceImage": "docker.io/haugene/transmission-openvpn",
+  "image": "ghcr.io/joejulian/container-images/transmission-openvpn",
+  "tags": [
+    "5.5.2"
+  ]
+}
