@@ -10,7 +10,7 @@
   "image": "ghcr.io/joejulian/container-images/node",
   "tags": [
     "26.12.1",
-    "24.22.1"
+    "26.12.1"
   ],
   "latestTag": "latest"
 }
