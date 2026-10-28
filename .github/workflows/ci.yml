@@ -63,7 +63,7 @@ jobs:
       - name: Validate build image
         if: matrix.type == 'build'
         run: ./scripts/build-local.sh "${{ matrix.dir }}"
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         if: matrix.type == 'mirror'
         with:
           # renovate: datasource=golang-version depName=go
@@ -104,7 +104,7 @@ jobs:
       - name: Build local image for tests
         if: steps.has-tests.outputs.present == 'true' && matrix.type == 'build'
         run: ./scripts/build-local.sh "${{ matrix.dir }}"
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         if: steps.has-tests.outputs.present == 'true'
         with:
           # renovate: datasource=golang-version depName=go
