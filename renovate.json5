@@ -27,7 +27,7 @@
       enabled: false,
     },
     {
-      matchDatasources: ["docker", "github-tags", "git-tags", "pypi", "golang-version"],
+      matchDatasources: ["docker", "github-tags", "git-tags", "pypi", "golang-version", "custom.android-build-tools"],
       matchUpdateTypes: ["digest", "pin", "pinDigest", "patch", "minor"],
       automerge: true,
       addLabels: ["dependencies", "automerge"],
@@ -40,6 +40,15 @@
       pinDigests: true,
     },
   ],
+  customDatasources: {
+    "android-build-tools": {
+      defaultRegistryUrlTemplate: "https://dl.google.com/android/repository/repository2-3.xml",
+      format: "plain",
+      transformTemplates: [
+        '{"releases": [releases[$contains(version, /path="build-tools;[0-9]+\\.[0-9]+\\.[0-9]+"/)].{"version": $match(version, /build-tools;([0-9]+\\.[0-9]+\\.[0-9]+)"/).groups[0]}]}',
+      ],
+    },
+  },
   customManagers: [
 {
     "customType": "regex",
@@ -55,6 +64,7 @@
       customType: "regex",
       managerFilePatterns: ["/(^|/)images\\/[^/]+\\/Dockerfile$/"],
       matchStrings: [
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+) versioning=(?<versioning>[^\\s]+)\\nARG ANDROID_BUILD_TOOLS_VERSION=(?<currentValue>[^\\s]+)",
         "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+) versioning=(?<versioning>[^\\s]+)\\nARG FSYSLOG_VERSION=(?<currentValue>[^\\s]+)",
         "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+) versioning=(?<versioning>[^\\s]+)\\nARG UNIFI_CAM_PROXY_REF=(?<currentValue>[^\\s]+)",
       ],
