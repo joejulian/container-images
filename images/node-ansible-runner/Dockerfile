@@ -1,4 +1,4 @@
-FROM ghcr.io/joejulian/container-images/node:22.23.2@sha256:c1f90c812cd7aa524c82fa213f020ef45628fda5067684c0204f34bfce568bb1 AS node
+FROM ghcr.io/joejulian/container-images/node:26.12.1@sha256:33d001c867e40433d6f5fea81e404290601cc498361732f9696178cf7244a370 AS node
 
 FROM ghcr.io/joejulian/container-images/python:3.13.15-bookworm@sha256:e0def53ea821a347b8fd19d51e17ff03032ccca5cacb316fcec3750bc468b1e1
 

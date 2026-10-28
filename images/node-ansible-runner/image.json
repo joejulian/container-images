@@ -10,5 +10,5 @@
   "dockerfile": "Dockerfile",
   "image": "ghcr.io/joejulian/container-images/node-ansible-runner",
   "latestTag": "latest",
-  "versionCommand": "python --version >/dev/null && node --version >/dev/null && printf 'python3.13.15-node22.23.2\\n'"
+  "versionCommand": "python -c \"import platform, subprocess; print('python' + platform.python_version() + '-node' + subprocess.check_output(['node', '-p', 'process.versions.node'], text=True).strip())\""
 }
