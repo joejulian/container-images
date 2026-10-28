@@ -1,0 +1,10 @@
+{
+  "name": "docker-dind",
+  "type": "mirror",
+  "basePreference": "mirror",
+  "platforms": ["linux/amd64", "linux/arm64"],
+  "sourceImage": "docker.io/library/docker",
+  "image": "ghcr.io/joejulian/container-images/docker-dind",
+  "tags": ["29.5.2-dind"],
+  "latestTag": "latest"
+}
