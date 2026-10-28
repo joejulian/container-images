@@ -27,7 +27,7 @@
       enabled: false,
     },
     {
-      matchDatasources: ["docker", "github-tags", "git-tags", "pypi"],
+      matchDatasources: ["docker", "github-tags", "git-tags", "pypi", "golang-version"],
       matchUpdateTypes: ["digest", "pin", "pinDigest", "patch", "minor"],
       automerge: true,
       addLabels: ["dependencies", "automerge"],
@@ -41,6 +41,16 @@
     },
   ],
   customManagers: [
+{
+    "customType": "regex",
+    "managerFilePatterns": [
+        "/(^|/)\\.github/workflows/[^/]+\\.ya?ml$/"
+    ],
+    "matchStrings": [
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\\n\\s*go-version:\\s*[\\\"']?(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)",
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\\n\\s*go install [^\\s@]+@(?<currentValue>v[^\\s]+)"
+    ]
+},
     {
       customType: "regex",
       managerFilePatterns: ["/(^|/)images\\/[^/]+\\/Dockerfile$/"],
