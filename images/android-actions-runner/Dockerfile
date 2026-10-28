@@ -34,7 +34,9 @@ COPY tests/signing_fixture.py /var/tmp/runner-signing-fixture.py
 RUN python3 /var/tmp/runner-signing-fixture.py \
     && rm /var/tmp/runner-signing-fixture.py
 
-RUN test "$(node --version | cut -d. -f1)" = v24 \
+RUN node_version="$(sed -n 's#^FROM .*/node:\([^@]*\)@.*#\1#p' /usr/local/share/android-actions-runner.Dockerfile)" \
+    && test -n "$node_version" \
+    && test "$(node --version)" = "v${node_version}" \
     && npm --version \
     && test -x /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager \
     && test -f /opt/android-sdk/platforms/android-35/android.jar \
