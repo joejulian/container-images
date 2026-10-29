@@ -17,7 +17,8 @@ their ephemeral workspace or temporary storage. Release outputs should cross
 jobs through checked Actions artifacts rather than shared build volumes.
 
 Image builds run `tests/smoke.sh` as the default user: offline native and ARM64
-Rust builds, formatting/Clippy, GNU linking and ARM64 execution. The script is
+Rust builds, formatting/Clippy, GNU linking and ARM64 execution. The script
+also checks a retained MQTT round trip with its own loopback broker. It is
 retained at `/usr/local/libexec/rust-actions-smoke` for runtime qualification
 under a job's actual security context. Application broker, protocol and hardware
 tests remain the consuming project's responsibility.
