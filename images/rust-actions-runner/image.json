@@ -1,0 +1,11 @@
+{
+  "name": "rust-actions-runner",
+  "type": "build",
+  "basePreference": "debian",
+  "platforms": ["linux/amd64"],
+  "context": "images/rust-actions-runner",
+  "dockerfile": "Dockerfile",
+  "image": "ghcr.io/joejulian/container-images/rust-actions-runner",
+  "latestTag": "latest",
+  "versionCommand": "cat /usr/local/share/rust-actions-runner-version"
+}
