@@ -9,6 +9,6 @@
   "sourceImage": "docker.io/itzg/minecraft-server",
   "image": "ghcr.io/joejulian/container-images/minecraft-server",
   "tags": [
-    "2026.10.1"
+    "2026.11.0"
   ]
 }
