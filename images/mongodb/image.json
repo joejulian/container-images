@@ -9,7 +9,7 @@
   "sourceImage": "docker.io/library/mongo",
   "image": "ghcr.io/joejulian/container-images/mongodb",
   "tags": [
-    "8.0.34"
+    "8.0.38"
   ],
   "latestTag": "latest",
   "versionPattern": "^8\\.0\\.[0-9]+$"
