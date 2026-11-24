@@ -9,7 +9,7 @@
   "sourceImage": "docker.io/ollama/ollama",
   "image": "ghcr.io/joejulian/container-images/ollama",
   "tags": [
-    "0.40.17"
+    "0.40.18"
   ],
   "latestTag": "latest"
 }
